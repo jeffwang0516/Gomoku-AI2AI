@@ -6,7 +6,7 @@ class Score {
 	public static int TWO = 100;
 	public static int THREE = 1000;
 	public static int FOUR = 100000;
-	public static int FIVE = 10000000;
+	public static int FIVE = 1000000;
 	public static int BLOCKED_ONE = 1;
 	public static int BLOCKED_TWO = 10;
 	public static int BLOCKED_THREE = 100;
@@ -31,37 +31,41 @@ public class AIStrategyEasy implements AIStrategy{
 		int x = previousMove.getX();
 		int y = previousMove.getY();
 		// PLAYER 1 AI Defines Here
+	
 		
-		
-		
-		
-		
-		
-		
-		return minimax(2); // return next step by new Move(x,y)
+		return minimax(6); // return next step by new Move(x,y)
 	}
 	// Max min
 	
 	Move minimax(int deep) {
 		int best = Integer.MIN_VALUE;
-		Move bestMove = new Move(0, 0);
+		ArrayList<Move> bestMoves = new ArrayList<Move>();
 		ArrayList<Move> moves = generateNextSteps(deep);
 		
 		for(int i=0; i<moves.size(); i++) {
 			Move point = moves.get(i);
 			board[point.getX()][point.getY()] = myColor;
-			int scoreMin = min(deep-1);
+			int scoreMin = min(deep-1, Integer.MAX_VALUE, best > Integer.MIN_VALUE ? best : Integer.MIN_VALUE);
+			
+			if(scoreMin == best) {
+				bestMoves.add(point);
+			}
 			if(scoreMin >= best) {
 				best = scoreMin;
-				bestMove = point;
+				bestMoves = new ArrayList<Move>();
+				bestMoves.add(point);
 			}
 			board[point.getX()][point.getY()] = Constants.EMPTY;
 		}
 		
-		return bestMove;
+		for( Move m: bestMoves){
+			System.out.println("Possible: "+m.getX()+", "+m.getY());
+		}
+		
+		return bestMoves.get((int)(Math.floor(Math.random() * bestMoves.size())));
 	}
 	
-	private int min(int deep) {
+	private int min(int deep, int alpha, int beta) {
 		int score = evaluateBoard(myColor) - evaluateBoard(opponentColor);
 		
 		if(deep<=0 || checkIfWin()) {
@@ -74,17 +78,21 @@ public class AIStrategyEasy implements AIStrategy{
 		for(int i=0; i<moves.size(); i++) {
 			Move point = moves.get(i);
 			board[point.getX()][point.getY()] = opponentColor;
-			int scoreMax = max(deep-1);
+			int scoreMax = max(deep-1, best < alpha ? best : alpha, beta);
 			board[point.getX()][point.getY()] = Constants.EMPTY;
 			
 			if(scoreMax < best) {
 				best = scoreMax;
 			}
+			
+			if( scoreMax <= beta) {
+				return scoreMax;
+			}
 		}
 		return best;
 	}
 	
-	private int max(int deep) {
+	private int max(int deep, int alpha, int beta) {
 		int score = evaluateBoard(myColor) - evaluateBoard(opponentColor);
 		
 		if(deep<=0 || checkIfWin()) {
@@ -97,11 +105,14 @@ public class AIStrategyEasy implements AIStrategy{
 		for(int i=0; i<moves.size(); i++) {
 			Move point = moves.get(i);
 			board[point.getX()][point.getY()] = myColor;
-			int scoreMin = min(deep-1);
+			int scoreMin = min(deep-1, alpha, best > alpha ? best : beta);
 			board[point.getX()][point.getY()] = Constants.EMPTY;
 			
 			if(scoreMin > best) {
 				best = scoreMin;
+			}
+			if( scoreMin >= alpha) {
+				return scoreMin;
 			}
 		}
 		return best;
