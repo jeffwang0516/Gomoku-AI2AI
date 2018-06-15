@@ -31,8 +31,21 @@ public class AIStrategyEasy implements AIStrategy{
 		int x = previousMove.getX();
 		int y = previousMove.getY();
 		// PLAYER 1 AI Defines Here
-	
-		
+//		for(int i=0;i<GameController.BOARD_SIZE_X;i++) {
+//			for(int j=0;j<GameController.BOARD_SIZE_Y;j++) {
+//				System.out.print(board[i][j]+", ");;
+//			}
+//			System.out.println();
+//		}
+//		ArrayList<Move> arrayList = generateNextSteps(4);
+//		
+//		System.out.println("------");
+//		for(int i=0;i<arrayList.size();i++) {
+//			System.out.println("Step: "+arrayList.get(i).getX()+" "+arrayList.get(i).getY());
+//		}
+//		System.out.println("EV1: "+evaluateBoard(myColor) +", EV2: "+ evaluateBoard(opponentColor));
+//		int[] test = {0,0,1,0,2,0};
+//		System.out.println("TEST: "+evaluateRow(test, Constants.COLOR_WHITE)+"   "+scoreOfPattern(1, 0, 0));
 		return minimax(6); // return next step by new Move(x,y)
 	}
 	// Max min
@@ -61,12 +74,12 @@ public class AIStrategyEasy implements AIStrategy{
 		for( Move m: bestMoves){
 			System.out.println("Possible: "+m.getX()+", "+m.getY());
 		}
-		
+		System.out.println("Score = "+best);
 		return bestMoves.get((int)(Math.floor(Math.random() * bestMoves.size())));
 	}
 	
 	private int min(int deep, int alpha, int beta) {
-		int score = evaluateBoard(myColor) - evaluateBoard(opponentColor);
+		int score = -(evaluateBoard(myColor) - evaluateBoard(opponentColor));
 		
 		if(deep<=0 || checkIfWin()) {
 			return score;
@@ -237,6 +250,11 @@ public class AIStrategyEasy implements AIStrategy{
 		return result;
 	}
 	private int evaluateRow(int row[], int playerColor) {
+//		System.out.println("TESTEVROW");
+//		for(int i=0;i<row.length;i++) {
+//			System.out.print(row[i]);
+//		}
+//		System.out.println("TESTEVROW END");
 		int result = 0;
 		int count = 0;
 		int block = 0;
@@ -267,7 +285,7 @@ public class AIStrategyEasy implements AIStrategy{
 			}
 		}
 		
-		return 0;
+		return result;
 	}
 	private ArrayList<Move> generateNextSteps(int deep) {
 		ArrayList<Move> fives = new ArrayList<Move>();
@@ -319,30 +337,48 @@ public class AIStrategyEasy implements AIStrategy{
 		}
 		
 		if(!fives.isEmpty()) {
+			System.out.println("five");
 			ArrayList<Move> result = new ArrayList<Move>();
+			
 			result.add(fives.get(0));
 			return result;
 		}
 		
-		if(!fours.isEmpty()) return fours;
+		if(!fours.isEmpty()) {System.out.println("four");return fours;}
 		
-		if(!twothrees.isEmpty()) return twothrees;
+		if(!twothrees.isEmpty()) {System.out.println("twothree");return twothrees;}
 		
-		threes.addAll(twos);
-		threes.addAll(neighbors);
-		threes.addAll(nextNeighbors);
+		if(!threes.isEmpty()) return threes;
+//		System.out.println("three");
+//		for(int i=0;i<threes.size();i++) {
+//			System.out.println("Step: "+threes.get(i).getX()+" "+threes.get(i).getY());
+//		}
+//		threes.addAll(twos);
+//		System.out.println("three+two");
+//		for(int i=0;i<threes.size();i++) {
+//			System.out.println("Step: "+threes.get(i).getX()+" "+threes.get(i).getY());
+//		}
+		twos.addAll(neighbors);
+//		System.out.println("three+neighbor");
+//		for(int i=0;i<threes.size();i++) {
+//			System.out.println("Step: "+threes.get(i).getX()+" "+threes.get(i).getY());
+//		}
+		twos.addAll(nextNeighbors);
+		System.out.println("three+nxtneighbor");
+		for(int i=0;i<threes.size();i++) {
+			System.out.println("Step: "+threes.get(i).getX()+" "+threes.get(i).getY());
+		}
 		
-		
-		if(threes.size() > 20) {
+		if(twos.size() > 40) {
 			ArrayList<Move> result = new ArrayList<Move>();
-			for(int i=0;i< threes.size() && i<20;i++) {
-				result.add(threes.get(i));
+			for(int i=0;i< twos.size() && i<40;i++) {
+				result.add(twos.get(i));
 			}
 			return result;
 			
 		}
 		
-		return threes;
+		return twos;
 	}
 	
 	private int calScoreOfPoint(Move point, int playerColor) {

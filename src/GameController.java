@@ -67,7 +67,7 @@ public class GameController {
 			int x = e.getX();
 			int y = e.getY();
 			int gridSize = Board.GRID_SIZE;
-			
+//			
 			if (!((x % gridSize) == 0 || ((x + 1) % gridSize) == 0 || ((x - 1) % gridSize) == 0
 					|| (y % gridSize) == 0 || ((y + 1) % gridSize) == 0 || ((y - 1) % gridSize) == 0)) {
 				gameModel.clicked(new Move(x / gridSize, y / gridSize));
@@ -76,6 +76,29 @@ public class GameController {
 				if(gameModel.getGameStatus() > 0) {
 					gameView.showGameEndNotification(gameModel.getGameStatus());
 				}
+			}
+			
+			// Auto Start
+//			System.out.println("Start...");
+//			int count = 1;
+//			while(gameModel.getGameStatus() <= 0) {
+//				count++;
+//				refreshViewAfterMove();
+//				if(count % 100000 != 0) continue;
+//				System.out.println("In");
+//				gameModel.clicked(new Move(0, 0));
+//				refreshViewAfterMove();
+////				try {
+////					Thread.sleep(1000);
+////				} catch (InterruptedException e1) {
+////					// TODO Auto-generated catch block
+////					e1.printStackTrace();
+////				}
+//				
+//			}
+			
+			if(gameModel.getGameStatus() > 0) {
+				gameView.showGameEndNotification(gameModel.getGameStatus());
 			}
 		}
 		

@@ -2,7 +2,7 @@ import java.util.Vector;
 
 public class GameModel {
 	// Set first move for player 1
-	private Move firstStep = new Move(7, 7);
+	private Move firstStep = new Move(7,7);
 	
 	
 	private Solver player1 = new HumanSolver(this, Constants.COLOR_BLACK);
@@ -33,6 +33,7 @@ public class GameModel {
 	Boolean ifFirstStep = true;
 	Move previousStep;
 	public void clicked(Move move) {
+		System.out.println("Clicked");
 		boolean stepMade = false;
 		if (!ifFirstStep) {
 			move = previousStep;
