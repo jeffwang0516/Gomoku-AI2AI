@@ -97,9 +97,9 @@ public class GameController {
 //				
 //			}
 			
-			if(gameModel.getGameStatus() > 0) {
-				gameView.showGameEndNotification(gameModel.getGameStatus());
-			}
+//			if(gameModel.getGameStatus() > 0) {
+//				gameView.showGameEndNotification(gameModel.getGameStatus());
+//			}
 		}
 		
 	}

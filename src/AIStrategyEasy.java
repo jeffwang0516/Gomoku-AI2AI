@@ -46,7 +46,11 @@ public class AIStrategyEasy implements AIStrategy{
 //		System.out.println("EV1: "+evaluateBoard(myColor) +", EV2: "+ evaluateBoard(opponentColor));
 //		int[] test = {0,0,1,0,2,0};
 //		System.out.println("TEST: "+evaluateRow(test, Constants.COLOR_WHITE)+"   "+scoreOfPattern(1, 0, 0));
-		return minimax(6); // return next step by new Move(x,y)
+		Move point = minimax(4);
+		int myScore = calScoreOfPoint(point, Constants.COLOR_BLACK);
+		int  opponentScore= calScoreOfPoint(point, Constants.COLOR_WHITE);
+		System.out.println("BLACK: "+myScore+" WHITE: "+opponentScore);
+		return point; // return next step by new Move(x,y)
 	}
 	// Max min
 	
@@ -54,12 +58,13 @@ public class AIStrategyEasy implements AIStrategy{
 		int best = Integer.MIN_VALUE;
 		ArrayList<Move> bestMoves = new ArrayList<Move>();
 		ArrayList<Move> moves = generateNextSteps(deep);
-		
+		int alpha = Integer.MIN_VALUE;
+		int beta = Integer.MAX_VALUE;
 		for(int i=0; i<moves.size(); i++) {
 			Move point = moves.get(i);
 			board[point.getX()][point.getY()] = myColor;
-			int scoreMin = min(deep-1, Integer.MAX_VALUE, best > Integer.MIN_VALUE ? best : Integer.MIN_VALUE);
-			
+			int scoreMin = min(deep-1, alpha, beta);
+			board[point.getX()][point.getY()] = Constants.EMPTY;
 			if(scoreMin == best) {
 				bestMoves.add(point);
 			}
@@ -68,7 +73,11 @@ public class AIStrategyEasy implements AIStrategy{
 				bestMoves = new ArrayList<Move>();
 				bestMoves.add(point);
 			}
-			board[point.getX()][point.getY()] = Constants.EMPTY;
+			if( scoreMin >= beta) {
+				break;
+			}
+			alpha = Integer.max(alpha, scoreMin);
+			
 		}
 		
 		for( Move m: bestMoves){
@@ -79,7 +88,7 @@ public class AIStrategyEasy implements AIStrategy{
 	}
 	
 	private int min(int deep, int alpha, int beta) {
-		int score = -(evaluateBoard(myColor) - evaluateBoard(opponentColor));
+		int score = (evaluateBoard(myColor) - evaluateBoard(opponentColor));
 		
 		if(deep<=0 || checkIfWin()) {
 			return score;
@@ -91,16 +100,17 @@ public class AIStrategyEasy implements AIStrategy{
 		for(int i=0; i<moves.size(); i++) {
 			Move point = moves.get(i);
 			board[point.getX()][point.getY()] = opponentColor;
-			int scoreMax = max(deep-1, best < alpha ? best : alpha, beta);
+			int scoreMax = (int) (max(deep-1, alpha, beta) * 0.8);
 			board[point.getX()][point.getY()] = Constants.EMPTY;
 			
 			if(scoreMax < best) {
 				best = scoreMax;
 			}
 			
-			if( scoreMax <= beta) {
+			if( scoreMax <= alpha) {
 				return scoreMax;
 			}
+			beta = Integer.min(beta, scoreMax);
 		}
 		return best;
 	}
@@ -118,176 +128,22 @@ public class AIStrategyEasy implements AIStrategy{
 		for(int i=0; i<moves.size(); i++) {
 			Move point = moves.get(i);
 			board[point.getX()][point.getY()] = myColor;
-			int scoreMin = min(deep-1, alpha, best > alpha ? best : beta);
+			int scoreMin = (int) (min(deep-1, alpha, beta) * 0.8);
 			board[point.getX()][point.getY()] = Constants.EMPTY;
 			
 			if(scoreMin > best) {
 				best = scoreMin;
 			}
-			if( scoreMin >= alpha) {
+			if( scoreMin >= beta) {
 				return scoreMin;
 			}
+			alpha = Integer.max(alpha, scoreMin);
 		}
 		return best;
 	}
 	
-	private boolean checkIfWin() {
-		for(int i=0;i<GameController.BOARD_SIZE_X;i++) {
-			for(int j=0;j<GameController.BOARD_SIZE_Y;j++) {
-				if(board[i][j] != Constants.EMPTY) {
-					if(checkIfFive(i, j)) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-	private boolean checkIfFive(int x, int y) {
-		
-		
-		int count;
-		int i, j;
-
-		count = 1; // Vertical
-		for (i = 1; checkXYInBound(x, y + i) && board[x][y + i] == board[x][y]; i++)
-			count++;
-		for (j = -1; checkXYInBound(x, y + j) && board[x][y + j] == board[x][y]; j--)
-			count++;
-		if (count >= 5) {
-			return true;
-		}
-
-		count = 1; // Horizontal
-		for (i = 1; checkXYInBound(x + i, y) && board[x + i][y] == board[x][y]; i++)
-			count++;
-		for (j = -1; checkXYInBound(x + j, y) && board[x + j][y] == board[x][y]; j--)
-			count++;
-		if (count >= 5) {
-			return true;
-		}
-
-		count = 1; // BackSlash
-		for (i = 1; checkXYInBound(x + i, y + i) && board[x + i][y + i] == board[x][y]; i++)
-			count++;
-		for (j = -1; checkXYInBound(x + j, y + j)
-				&& board[x + j][y + j] == board[x][y]; j--)
-			count++;
-		if (count >= 5) {
-			return true;
-		}
-
-		count = 1; // Slash
-		for (i = 1; checkXYInBound(x - i, y + i) && board[x - i][y + i] == board[x][y]; i++)
-			count++;
-		for (j = -1; checkXYInBound(x - j, y + j)
-				&& board[x - j][y + j] == board[x][y]; j--)
-			count++;
-		if (count >= 5) {
-			return true;
-		}
-
-		
-		
-		return false;
-	}
-	// Evaluate whole board
-	private int evaluateBoard(int playerColor) {
-		int result = 0;
-		
-		// eval -
-		for(int i=0;i<GameController.BOARD_SIZE_X; i++) {
-			result += evaluateRow(board[i], playerColor);
-		}
-		// eval |
-		for(int i=0;i<GameController.BOARD_SIZE_Y; i++) {
-			int[] r = new int[GameController.BOARD_SIZE_X];
-			for(int j=0;j<GameController.BOARD_SIZE_X; j++) {
-				
-				r[j] = board[j][i];
-				
-			}
-			result += evaluateRow(r, playerColor);
-		}
-		// eval \
-		// Assume board is square
-		int boardSize = GameController.BOARD_SIZE_X;
-		for(int i=0;i<boardSize; i++) {
-			int size = boardSize - i;
-			int[] r = new int[size];
-			for(int j=0; j < size; j++) {
-				r[j] = board[i+j][j];
-			}
-			result += evaluateRow(r, playerColor);
-		}
-		for(int i=1;i<boardSize; i++) {
-			int size = boardSize - i;
-			int[] r = new int[size];
-			for(int j=0; j < size; j++) {
-				r[j] = board[j][i+j];
-			}
-			result += evaluateRow(r, playerColor);
-		}
-		
-		// eval /
-		for(int i=0;i<boardSize; i++) {
-			int size = i+1;
-			int[] r = new int[size];
-			for(int j=0; j < size; j++) {
-				r[j] = board[i-j][j];
-			}
-			result += evaluateRow(r, playerColor);
-		}
-		for(int i=1;i<boardSize; i++) {
-			int size = boardSize - i;
-			int[] r = new int[size];
-			for(int j=0; j < size; j++) {
-				r[j] = board[i+j][boardSize-j-1];
-			}
-			result += evaluateRow(r, playerColor);
-		}
-		
-		return result;
-	}
-	private int evaluateRow(int row[], int playerColor) {
-//		System.out.println("TESTEVROW");
-//		for(int i=0;i<row.length;i++) {
-//			System.out.print(row[i]);
-//		}
-//		System.out.println("TESTEVROW END");
-		int result = 0;
-		int count = 0;
-		int block = 0;
-		int emptyPosition = 0;
-		
-		for(int i=0; i<row.length; i++) {
-			if(row[i] == playerColor) {
-				count = 1;
-				block = 0;
-				emptyPosition = 0;
-				
-				if(i==0) block=1;
-				else if(row[i-1] != Constants.EMPTY) block=1;
-				
-				for(i=i+1;i<row.length; i++) {
-					if(row[i] == playerColor) {
-						count++;
-					}else if(emptyPosition == 0 && i < row.length-1 && row[i] == Constants.EMPTY && row[i+1] == playerColor) {
-						emptyPosition = count;
-					} else {
-						break;
-					}
-				}
-				
-				if(i == row.length || row[i] != Constants.EMPTY) block++;
-				result += scoreOfPattern(count, block, emptyPosition);
-				
-			}
-		}
-		
-		return result;
-	}
 	private ArrayList<Move> generateNextSteps(int deep) {
+		// Generate next possible steps
 		ArrayList<Move> fives = new ArrayList<Move>();
 		ArrayList<Move> fours = new ArrayList<Move>();
 		ArrayList<Move> twothrees = new ArrayList<Move>();
@@ -303,6 +159,8 @@ public class AIStrategyEasy implements AIStrategy{
 					if(hasNeighbor(point, 1, 1) ) {
 						int myScore = calScoreOfPoint(point, Constants.COLOR_BLACK);
 						int opponentScore = calScoreOfPoint(point, Constants.COLOR_WHITE);
+//						int opponentScore = calScoreOfPoint(point, Constants.COLOR_BLACK);
+//						int  myScore= calScoreOfPoint(point, Constants.COLOR_WHITE);
 						
 						if(myScore >= Score.FIVE) {
 							ArrayList<Move> res = new ArrayList<Move>();
@@ -326,6 +184,7 @@ public class AIStrategyEasy implements AIStrategy{
 				            twos.add(0, point);
 				        } else if(opponentScore >= Score.TWO) {
 				            twos.add(point);
+				            
 				        } else {
 				            neighbors.add(point);
 				        }
@@ -337,18 +196,18 @@ public class AIStrategyEasy implements AIStrategy{
 		}
 		
 		if(!fives.isEmpty()) {
-			System.out.println("five");
+//			System.out.println("five");
 			ArrayList<Move> result = new ArrayList<Move>();
 			
 			result.add(fives.get(0));
 			return result;
 		}
 		
-		if(!fours.isEmpty()) {System.out.println("four");return fours;}
+		if(!fours.isEmpty()) {return fours;}
 		
-		if(!twothrees.isEmpty()) {System.out.println("twothree");return twothrees;}
+		if(!twothrees.isEmpty()) {return twothrees;}
 		
-		if(!threes.isEmpty()) return threes;
+//		if(!threes.isEmpty()) return threes;
 //		System.out.println("three");
 //		for(int i=0;i<threes.size();i++) {
 //			System.out.println("Step: "+threes.get(i).getX()+" "+threes.get(i).getY());
@@ -364,21 +223,30 @@ public class AIStrategyEasy implements AIStrategy{
 //			System.out.println("Step: "+threes.get(i).getX()+" "+threes.get(i).getY());
 //		}
 		twos.addAll(nextNeighbors);
-		System.out.println("three+nxtneighbor");
-		for(int i=0;i<threes.size();i++) {
-			System.out.println("Step: "+threes.get(i).getX()+" "+threes.get(i).getY());
-		}
-		
-		if(twos.size() > 40) {
+//		System.out.println("three+nxtneighbor");
+//		for(int i=0;i<threes.size();i++) {
+//			System.out.println("Step: "+threes.get(i).getX()+" "+threes.get(i).getY());
+//		}
+		threes.addAll(twos);
+		if(threes.size() > 40) {
 			ArrayList<Move> result = new ArrayList<Move>();
-			for(int i=0;i< twos.size() && i<40;i++) {
-				result.add(twos.get(i));
+			for(int i=0;i< threes.size() && i<40;i++) {
+				result.add(threes.get(i));
 			}
 			return result;
 			
 		}
-		
-		return twos;
+//		if(twos.size() > 40) {
+//			ArrayList<Move> result = new ArrayList<Move>();
+//			for(int i=0;i< twos.size() && i<40;i++) {
+//				result.add(twos.get(i));
+//			}
+//			return result;
+//			
+//		}
+//		
+//		return twos;
+		return threes;
 	}
 	
 	private int calScoreOfPoint(Move point, int playerColor) {
@@ -601,7 +469,167 @@ public class AIStrategyEasy implements AIStrategy{
 		
 		return result;
 	}
-	// Generate next possible steps
+	
+	
+	private boolean checkIfWin() {
+		for(int i=0;i<GameController.BOARD_SIZE_X;i++) {
+			for(int j=0;j<GameController.BOARD_SIZE_Y;j++) {
+				if(board[i][j] != Constants.EMPTY) {
+					if(checkIfFive(i, j)) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	private boolean checkIfFive(int x, int y) {
+		
+		
+		int count;
+		int i, j;
+
+		count = 1; // Vertical
+		for (i = 1; checkXYInBound(x, y + i) && board[x][y + i] == board[x][y]; i++)
+			count++;
+		for (j = -1; checkXYInBound(x, y + j) && board[x][y + j] == board[x][y]; j--)
+			count++;
+		if (count >= 5) {
+			return true;
+		}
+
+		count = 1; // Horizontal
+		for (i = 1; checkXYInBound(x + i, y) && board[x + i][y] == board[x][y]; i++)
+			count++;
+		for (j = -1; checkXYInBound(x + j, y) && board[x + j][y] == board[x][y]; j--)
+			count++;
+		if (count >= 5) {
+			return true;
+		}
+
+		count = 1; // BackSlash
+		for (i = 1; checkXYInBound(x + i, y + i) && board[x + i][y + i] == board[x][y]; i++)
+			count++;
+		for (j = -1; checkXYInBound(x + j, y + j)
+				&& board[x + j][y + j] == board[x][y]; j--)
+			count++;
+		if (count >= 5) {
+			return true;
+		}
+
+		count = 1; // Slash
+		for (i = 1; checkXYInBound(x - i, y + i) && board[x - i][y + i] == board[x][y]; i++)
+			count++;
+		for (j = -1; checkXYInBound(x - j, y + j)
+				&& board[x - j][y + j] == board[x][y]; j--)
+			count++;
+		if (count >= 5) {
+			return true;
+		}
+
+		
+		
+		return false;
+	}
+	// Evaluate whole board
+	private int evaluateBoard(int playerColor) {
+		int result = 0;
+		
+		// eval -
+		for(int i=0;i<GameController.BOARD_SIZE_X; i++) {
+			result += evaluateRow(board[i], playerColor);
+		}
+		// eval |
+		for(int i=0;i<GameController.BOARD_SIZE_Y; i++) {
+			int[] r = new int[GameController.BOARD_SIZE_X];
+			for(int j=0;j<GameController.BOARD_SIZE_X; j++) {
+				
+				r[j] = board[j][i];
+				
+			}
+			result += evaluateRow(r, playerColor);
+		}
+		// eval \
+		// Assume board is square
+		int boardSize = GameController.BOARD_SIZE_X;
+		for(int i=0;i<boardSize; i++) {
+			int size = boardSize - i;
+			int[] r = new int[size];
+			for(int j=0; j < size; j++) {
+				r[j] = board[i+j][j];
+			}
+			result += evaluateRow(r, playerColor);
+		}
+		for(int i=1;i<boardSize; i++) {
+			int size = boardSize - i;
+			int[] r = new int[size];
+			for(int j=0; j < size; j++) {
+				r[j] = board[j][i+j];
+			}
+			result += evaluateRow(r, playerColor);
+		}
+		
+		// eval /
+		for(int i=0;i<boardSize; i++) {
+			int size = i+1;
+			int[] r = new int[size];
+			for(int j=0; j < size; j++) {
+				r[j] = board[i-j][j];
+			}
+			result += evaluateRow(r, playerColor);
+		}
+		for(int i=1;i<boardSize; i++) {
+			int size = boardSize - i;
+			int[] r = new int[size];
+			for(int j=0; j < size; j++) {
+				r[j] = board[i+j][boardSize-j-1];
+			}
+			result += evaluateRow(r, playerColor);
+		}
+		
+		return result;
+	}
+	private int evaluateRow(int row[], int playerColor) {
+//		System.out.println("TESTEVROW");
+//		for(int i=0;i<row.length;i++) {
+//			System.out.print(row[i]);
+//		}
+//		System.out.println("TESTEVROW END");
+		int result = 0;
+		int count = 0;
+		int block = 0;
+		int emptyPosition = 0;
+		
+		for(int i=0; i<row.length; i++) {
+			if(row[i] == playerColor) {
+				count = 1;
+				block = 0;
+				emptyPosition = 0;
+				
+				if(i==0) block=1;
+				else if(row[i-1] != Constants.EMPTY) block=1;
+				
+				for(i=i+1;i<row.length; i++) {
+					if(row[i] == playerColor) {
+						count++;
+					}else if(emptyPosition == 0 && i < row.length-1 && row[i] == Constants.EMPTY && row[i+1] == playerColor) {
+						emptyPosition = count;
+					} else {
+						break;
+					}
+				}
+				
+				if(i == row.length || row[i] != Constants.EMPTY) block++;
+				result += scoreOfPattern(count, block, emptyPosition);
+				
+			}
+		}
+		
+		return result;
+	}
+	
+	
+	
 	
 	
 	public boolean checkXYInBound(int x, int y) {

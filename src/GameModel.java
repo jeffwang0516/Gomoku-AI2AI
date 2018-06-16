@@ -36,9 +36,10 @@ public class GameModel {
 		System.out.println("Clicked");
 		boolean stepMade = false;
 		if (!ifFirstStep) {
-			move = previousStep;
 			
-			stepMade = currentSolver.processNextMove(move);
+			
+			stepMade = currentSolver.processNextMove(previousStep);
+			move = currentSolver.getNewMove();
 		} else {
 			move = firstStep;
 			stepMade = currentSolver.makeNewMove(move);
