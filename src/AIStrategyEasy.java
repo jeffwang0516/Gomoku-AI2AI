@@ -1,13 +1,7 @@
-import java.awt.List;
+
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-
-import javax.naming.InitialContext;
-import javax.xml.crypto.dsig.keyinfo.RetrievalMethod;
-
-
 
 public class AIStrategyEasy implements AIStrategy{
 	
@@ -28,7 +22,7 @@ public class AIStrategyEasy implements AIStrategy{
 		initScore();
 	}
 	
-	public void initScore() {
+	private void initScore() {
 		scoreSelf = new int[GameController.BOARD_SIZE_X][GameController.BOARD_SIZE_Y];
 		scoreOpponent = new int[GameController.BOARD_SIZE_X][GameController.BOARD_SIZE_Y];
 		
@@ -37,18 +31,18 @@ public class AIStrategyEasy implements AIStrategy{
 		    		Move point = new Move(i, j);
 				  if(board[i][j] == Constants.EMPTY) {
 					  	
-				    if(this.hasNeighbor(point, 2, 2)) { 
-				      int cs = calScoreOfPoint(point, myColor);
-				      int hs = calScoreOfPoint(point, opponentColor);
+				    if(Util.hasNeighbor(this.board, point, 2, 2)) { 
+				      int cs = Util.calScoreOfPoint(this.board, point, myColor);
+				      int hs = Util.calScoreOfPoint(this.board, point, opponentColor);
 				      this.scoreSelf[i][j] = cs;
 				      this.scoreOpponent[i][j] = hs;
 				    }
 				
 				  } else if (board[i][j] == myColor) { 
-				    this.scoreSelf[i][j] = calScoreOfPoint(point, myColor);
+				    this.scoreSelf[i][j] = Util.calScoreOfPoint(this.board, point, myColor);
 				    this.scoreOpponent[i][j] = 0;
 				  } else if (board[i][j] == opponentColor) { 
-				    this.scoreSelf[i][j] = calScoreOfPoint(point, opponentColor);
+				    this.scoreSelf[i][j] = Util.calScoreOfPoint(this.board, point, opponentColor);
 				    this.scoreOpponent[i][j] = 0;
 				  }
 		    }
@@ -110,8 +104,8 @@ public class AIStrategyEasy implements AIStrategy{
 		Move point = minimax(minimaxDepth);
 		
 		// DEBUG message
-		int myScore = calScoreOfPoint(point, Constants.COLOR_BLACK);
-		int  opponentScore= calScoreOfPoint(point, Constants.COLOR_WHITE);
+		int myScore = Util.calScoreOfPoint(board, point, Constants.COLOR_BLACK);
+		int  opponentScore= Util.calScoreOfPoint(board, point, Constants.COLOR_WHITE);
 		System.out.println("BLACK: "+myScore+" WHITE: "+opponentScore);
 		System.out.println("EV1: "+evaluate(myColor) +", EV2: "+ evaluate(opponentColor));
 //		System.out.println("---------board----------");
@@ -149,8 +143,7 @@ public class AIStrategyEasy implements AIStrategy{
 	
 	
 	
-	int MAX_SCORE = Score.THREE;
-	int MIN_SCORE = Score.FOUR;
+	
 //	Move deepingMinimax(int deep) {
 //		Move result=null;
 //		for(int i=2;i<=deep;i+=2) {
@@ -162,7 +155,8 @@ public class AIStrategyEasy implements AIStrategy{
 //		}
 //		return result;
 //	}
-	
+	int MAX_SCORE = Score.THREE;
+	int MIN_SCORE = Score.FOUR;
 	// Find must kill step (FOURS or THREES)
 	Move checkMustKillStep(int deep, boolean onlyFour) {
 		int return_score = 0;
@@ -367,7 +361,7 @@ public class AIStrategyEasy implements AIStrategy{
 	
 	ArrayList<Move> min_kill(int playerColor, int deep) {
 		ArrayList<Move> result = new ArrayList<Move>();
-		int status = checkIfWin();
+		int status = Util.checkIfWin(board);
 		if(status == playerColor) return null;
 		if(status == reverseRole(playerColor)) return result;
 		if(deep<0) return null;
@@ -445,7 +439,7 @@ public class AIStrategyEasy implements AIStrategy{
 	private int min(int deep, int alpha, int beta) {
 		int score = evaluate(opponentColor);//(evaluateBoard(myColor) - evaluateBoard(opponentColor));
 		
-		if(deep<=0 || checkIfWin() > 0) {
+		if(deep<=0 || Util.checkIfWin(board) > 0) {
 			return score;
 		}
 		
@@ -488,21 +482,21 @@ public class AIStrategyEasy implements AIStrategy{
 	private int max(int deep, int alpha, int beta) {
 		int score = evaluate(myColor);//evaluateBoard(myColor) - evaluateBoard(opponentColor);
 		
-		if(deep<=0 || checkIfWin() > 0) {
-			int best = score;
-			if( best < Score.FOUR && best > -1*Score.FOUR) {
-				Move move = checkMustKillStep(findKillDepth, true);
-				if(move != null) {
-//					System.out.println("MaxKill:"+move.score);
-					return move.score;
-				}
-			}
-			if( best < Score.THREE*2 && best > -1*Score.THREE*2) {
-				Move move = checkMustKillStep(findKillDepth, false);
-				if(move != null) {
-					return move.score;
-				}
-			}
+		if(deep<=0 || Util.checkIfWin(board) > 0) {
+//			int best = score;
+//			if( best < Score.FOUR && best > -1*Score.FOUR) {
+//				Move move = checkMustKillStep(findKillDepth, true);
+//				if(move != null) {
+////					System.out.println("MaxKill:"+move.score);
+//					return move.score;
+//				}
+//			}
+//			if( best < Score.THREE*2 && best > -1*Score.THREE*2) {
+//				Move move = checkMustKillStep(findKillDepth, false);
+//				if(move != null) {
+//					return move.score;
+//				}
+//			}
 //			System.out.println("NoMaxKill:"+score);
 			return score;
 		}
@@ -528,18 +522,18 @@ public class AIStrategyEasy implements AIStrategy{
 			}
 			alpha = Integer.max(alpha, best);
 			
-//			if( (deep <= 2) && best < Score.FOUR && best > -1*Score.FOUR) {
-//				Move move = checkMustKillStep(7, true);
-//				if(move != null) {
-//					return move.score;
-//				}
-//			}
-//			if( (deep <= 2) && best < Score.THREE*2 && best > -1*Score.THREE*2) {
-//				Move move = checkMustKillStep(7, false);
-//				if(move != null) {
-//					return move.score;
-//				}
-//			}
+			if( (deep <= 2) && best < Score.FOUR && best > -1*Score.FOUR) {
+				Move move = checkMustKillStep(findKillDepth, true);
+				if(move != null) {
+					return move.score;
+				}
+			}
+			if( (deep <= 2) && best < Score.THREE*2 && best > -1*Score.THREE*2) {
+				Move move = checkMustKillStep(findKillDepth, false);
+				if(move != null) {
+					return move.score;
+				}
+			}
 		}
 		return best;
 	}
@@ -565,7 +559,7 @@ public class AIStrategyEasy implements AIStrategy{
 				if(board[i][j] == 0) {
 					Move point = new Move(i, j);
 					int num = steps.size() >= 6 ? 2 : 1;
-					if(hasNeighbor(point, num, num) ) {
+					if(Util.hasNeighbor(board, point, num, num) ) {
 						int myScore = scoreSelf[i][j];//calScoreOfPoint(point, Constants.COLOR_BLACK);
 						int opponentScore = scoreOpponent[i][j];//calScoreOfPoint(point, Constants.COLOR_WHITE);
 //						int opponentScore = calScoreOfPoint(point, Constants.COLOR_BLACK);
@@ -719,6 +713,7 @@ public class AIStrategyEasy implements AIStrategy{
 	}
 	
 	private int evaluate(int playerColor) {
+		// Evaluate of board, find max of both score matrix
 		int selfScoreMax = 0;
 		int opponentScoreMax = 0;
 		
@@ -742,25 +737,12 @@ public class AIStrategyEasy implements AIStrategy{
 		
 	}
 	
-	private int fixScore(int score) {
-	  if(score < Score.FOUR && score >= Score.BLOCKED_FOUR) {
-		if(score >= Score.BLOCKED_FOUR && score < (Score.BLOCKED_FOUR + Score.THREE)) {
-		      //单独冲四，意义不大
-		      return Score.THREE;
-		    } else if(score >= Score.BLOCKED_FOUR + Score.THREE && score < Score.BLOCKED_FOUR * 2) {
-		      return Score.FOUR;  //冲四活三，比双三分高，相当于自己形成活四
-		    } else {
-		      //双冲四 比活四分数也高
-		      return Score.FOUR * 2;
-		    }
-		  }
-		  return score;
-	}
+	
 	private void update(int x, int y) {
 		int color = board[x][y];
 		Move point = new Move(x, y);
 		if( color != opponentColor) {
-			int cs = calScoreOfPoint(point, myColor);
+			int cs = Util.calScoreOfPoint(board, point, myColor);
 			
 			this.scoreSelf[x][y] = cs;
 			
@@ -769,12 +751,13 @@ public class AIStrategyEasy implements AIStrategy{
 		}
 		
 		if(color != myColor) {
-			int hs = calScoreOfPoint(point, opponentColor);
+			int hs = Util.calScoreOfPoint(board, point, opponentColor);
 			this.scoreOpponent[x][y] = hs;
 		} else {
 			this.scoreOpponent[x][y] = 0;
 		}
 	}
+	
 	private void updateScore(Move lastMove) {
 		int radius = 6;
 		int len = GameController.BOARD_SIZE_X;
@@ -812,573 +795,581 @@ public class AIStrategyEasy implements AIStrategy{
 		    if(x>=len || y>=len) continue;
 		    update(x, y);
 		  }
-	}
-	private int calScoreOfPoint(Move point, int playerColor) {
-		int width = GameController.BOARD_SIZE_X;
-		int height = GameController.BOARD_SIZE_Y;
-		int result = 0;
-		int count = 0;
-		int block = 0;
-		int emptyPosition = -1;
-		int secondCount = 0; //Another dir
-		
-		
-		//// 以該點出發，找 - | \ / 連線
-		
-		
-		count = 1;
-		block = 0; // Meet border or opponent
-		emptyPosition = -1;
-		secondCount = 0;
-		
-		
-		// Find in right dir
-		for(int i=point.getY() + 1; ; i++) {
-			if(i>=width) {
-				block++;
-				break;
-			}
-			
-			int pointValue = board[point.getX()][i];
-			if(pointValue == Constants.EMPTY) {
-				if(emptyPosition==-1 && i < width-1 && board[point.getX()][i+1] == playerColor) {
-					emptyPosition = count;
-				} else {
-					break;
-				}
-			} else if (pointValue == playerColor) {
-				count++;
-			} else {
-				block++;
-				break;
-			}
-		}
-		
-		// Find in Left dir
-		for(int i=point.getY() - 1; ; i--) {
-			if(i<0) {
-				block++;
-				break;
-			}
-			
-			int pointValue = board[point.getX()][i];
-			if(pointValue == Constants.EMPTY) {
-				if(emptyPosition==-1 && i > 0 && board[point.getX()][i-1] == playerColor) {
-					emptyPosition = 0;
-				} else {
-					break;
-				}
-			} else if (pointValue == playerColor) {
-				secondCount++;
-				if(emptyPosition!=-1)
-					emptyPosition++;
-			} else {
-				block++;
-				break;
-			}
-		}
-		count += secondCount;
-		result += scoreOfPattern(count, block, emptyPosition);
-		
-		// Find in down dir
-		count = 1;
-		block = 0; // Meet border or opponent
-		emptyPosition = -1;
-		secondCount = 0;
-		
-		for(int i=point.getX() + 1; ; i++) {
-			if(i>=height) {
-				block++;
-				break;
-			}
-			
-			int pointValue = board[i][point.getY()];
-			if(pointValue == Constants.EMPTY) {
-				if(emptyPosition==-1 && i < height-1 && board[i+1][point.getY()] == playerColor) {
-					emptyPosition = count;
-				} else {
-					break;
-				}
-			} else if (pointValue == playerColor) {
-				count++;
-			} else {
-				block++;
-				break;
-			}
-		}
-		
-		// Find in up dir
-		for(int i=point.getX() - 1; ; i--) {
-			if(i<0) {
-				block++;
-				break;
-			}
-			
-			int pointValue = board[i][point.getY()];
-			if(pointValue == Constants.EMPTY) {
-				if(emptyPosition==-1 && i > 0 && board[i-1][point.getY()] == playerColor) {
-					emptyPosition = 0;
-				} else {
-					break;
-				}
-			} else if (pointValue == playerColor) {
-				secondCount++;
-				if(emptyPosition!=-1)
-					emptyPosition++;
-			} else {
-				block++;
-				break;
-			}
-		}
-		count += secondCount;
-		result += scoreOfPattern(count, block, emptyPosition);
-		
-		// Find in \ down dir
-		count = 1;
-		block = 0; // Meet border or opponent
-		emptyPosition = -1;
-		secondCount = 0;
-		
-		for(int i=1; ; i++) {
-			int x = point.getX() + i;
-			int y = point.getY() + i;
-			
-			if(!checkXYInBound(x, y)) {
-				block++;
-				break;
-			}
-			int pointValue = board[x][y];
-			if(pointValue == Constants.EMPTY) {
-				if(emptyPosition==-1 && x<height-1 && y<width-1 && board[x+1][y+1] == playerColor) {
-					emptyPosition = count;
-				} else {
-					break;
-				}
-			} else if (pointValue == playerColor) {
-				count++;
-			} else {
-				block++;
-				break;
-			}
-		}
-		
-		// Find in \ up dir
-		for(int i=1; ; i++) {
-			int x = point.getX() - i;
-			int y = point.getY() - i;
-			
-			if(!checkXYInBound(x, y)) {
-				block++;
-				break;
-			}
-			int pointValue = board[x][y];
-			if(pointValue == Constants.EMPTY) {
-				if(emptyPosition==-1 && x>0 && y>0 && board[x-1][y-1] == playerColor) {
-					emptyPosition = 0;
-				} else {
-					break;
-				}
-			} else if (pointValue == playerColor) {
-				secondCount++;
-				if(emptyPosition!=-1)
-					emptyPosition++;
-			} else {
-				block++;
-				break;
-			}
-		}
-		count += secondCount;
-		result += scoreOfPattern(count, block, emptyPosition);
-		
-		// Find in / up dir
-		count = 1;
-		block = 0; // Meet border or opponent
-		emptyPosition = -1;
-		secondCount = 0;
-		
-		for(int i=1; ; i++) {
-			int x = point.getX() + i;
-			int y = point.getY() - i;
-			
-			if(!checkXYInBound(x, y)) {
-				block++;
-				break;
-			}
-			int pointValue = board[x][y];
-			if(pointValue == Constants.EMPTY) {
-				if(emptyPosition==-1 && x<height-1 && y>0 && board[x+1][y-1] == playerColor) {
-					emptyPosition = count;
-				} else {
-					break;
-				}
-			} else if (pointValue == playerColor) {
-				count++;
-			} else {
-				block++;
-				break;
-			}
-		}
-		
-		for(int i=1; ; i++) {
-			int x = point.getX() - i;
-			int y = point.getY() + i;
-			
-			if(!checkXYInBound(x, y)) {
-				block++;
-				break;
-			}
-			int pointValue = board[x][y];
-			if(pointValue == Constants.EMPTY) {
-				if(emptyPosition==-1 && x>0 && y<width-1 && board[x-1][y+1] == playerColor) {
-					emptyPosition = 0;
-				} else {
-					break;
-				}
-			} else if (pointValue == playerColor) {
-				secondCount++;
-				if(emptyPosition!=-1)
-					emptyPosition++;
-			} else {
-				block++;
-				break;
-			}
-		}
-		count += secondCount;
-		
-		result += scoreOfPattern(count, block, emptyPosition);
-		
-		return result;
-	}
 	
-	
-	private int checkIfWin() {
-		for(int i=0;i<GameController.BOARD_SIZE_X;i++) {
-			for(int j=0;j<GameController.BOARD_SIZE_Y;j++) {
-				if(board[i][j] != Constants.EMPTY) {
-					int status = checkIfFive(i, j) ;
-					if(status != 0) {
-						return status ;
-					}
-				}
-			}
-		}
-		return 0;
-	}
-	private int checkIfFive(int x, int y) {
-		
-		
-		int count;
-		int i, j;
-
-		count = 1; // Vertical
-		for (i = 1; checkXYInBound(x, y + i) && board[x][y + i] == board[x][y]; i++)
-			count++;
-		for (j = -1; checkXYInBound(x, y + j) && board[x][y + j] == board[x][y]; j--)
-			count++;
-		if (count >= 5) {
-			return board[x][y];
-		}
-
-		count = 1; // Horizontal
-		for (i = 1; checkXYInBound(x + i, y) && board[x + i][y] == board[x][y]; i++)
-			count++;
-		for (j = -1; checkXYInBound(x + j, y) && board[x + j][y] == board[x][y]; j--)
-			count++;
-		if (count >= 5) {
-			return board[x][y];
-		}
-
-		count = 1; // BackSlash
-		for (i = 1; checkXYInBound(x + i, y + i) && board[x + i][y + i] == board[x][y]; i++)
-			count++;
-		for (j = -1; checkXYInBound(x + j, y + j)
-				&& board[x + j][y + j] == board[x][y]; j--)
-			count++;
-		if (count >= 5) {
-			return board[x][y];
-		}
-
-		count = 1; // Slash
-		for (i = 1; checkXYInBound(x - i, y + i) && board[x - i][y + i] == board[x][y]; i++)
-			count++;
-		for (j = -1; checkXYInBound(x - j, y + j)
-				&& board[x - j][y + j] == board[x][y]; j--)
-			count++;
-		if (count >= 5) {
-			return board[x][y];
-		}
-
-		
-		
-		return 0;
-	}
-	// Evaluate whole board
-	private int evaluateBoard(int playerColor) {
-		int result = 0;
-		
-		// eval -
-		for(int i=0;i<GameController.BOARD_SIZE_X; i++) {
-			result += evaluateRow(board[i], playerColor);
-		}
-		// eval |
-		for(int i=0;i<GameController.BOARD_SIZE_Y; i++) {
-			int[] r = new int[GameController.BOARD_SIZE_X];
-			for(int j=0;j<GameController.BOARD_SIZE_X; j++) {
-				
-				r[j] = board[j][i];
-				
-			}
-			result += evaluateRow(r, playerColor);
-		}
-		// eval \
-		// Assume board is square
-		int boardSize = GameController.BOARD_SIZE_X;
-		for(int i=0;i<boardSize; i++) {
-			int size = boardSize - i;
-			int[] r = new int[size];
-			for(int j=0; j < size; j++) {
-				r[j] = board[i+j][j];
-			}
-			result += evaluateRow(r, playerColor);
-		}
-		for(int i=1;i<boardSize; i++) {
-			int size = boardSize - i;
-			int[] r = new int[size];
-			for(int j=0; j < size; j++) {
-				r[j] = board[j][i+j];
-			}
-			result += evaluateRow(r, playerColor);
-		}
-		
-		// eval /
-		for(int i=0;i<boardSize; i++) {
-			int size = i+1;
-			int[] r = new int[size];
-			for(int j=0; j < size; j++) {
-				r[j] = board[i-j][j];
-			}
-			result += evaluateRow(r, playerColor);
-		}
-		for(int i=1;i<boardSize; i++) {
-			int size = boardSize - i;
-			int[] r = new int[size];
-			for(int j=0; j < size; j++) {
-				r[j] = board[i+j][boardSize-j-1];
-			}
-			result += evaluateRow(r, playerColor);
-		}
-		
-		return result;
-	}
-	private int evaluateRow(int row[], int playerColor) {
-//		System.out.println("TESTEVROW");
-//		for(int i=0;i<row.length;i++) {
-//			System.out.print(row[i]);
-//		}
-//		System.out.println("TESTEVROW END");
-		int result = 0;
-		int count = 0;
-		int block = 0;
-		int emptyPosition = 0;
-		
-		for(int i=0; i<row.length; i++) {
-			if(row[i] == playerColor) {
-				count = 1;
-				block = 0;
-				emptyPosition = 0;
-				
-				if(i==0) block=1;
-				else if(row[i-1] != Constants.EMPTY) block=1;
-				
-				for(i=i+1;i<row.length; i++) {
-					if(row[i] == playerColor) {
-						count++;
-					}else if(emptyPosition == 0 && i < row.length-1 && row[i] == Constants.EMPTY && row[i+1] == playerColor) {
-						emptyPosition = count;
-					} else {
-						break;
-					}
-				}
-				
-				if(i == row.length || row[i] != Constants.EMPTY) block++;
-				result += scoreOfPattern(count, block, emptyPosition);
-				
-			}
-		}
-		
-		return result;
-	}
-	
-	
-	
-	
-	
-	public boolean checkXYInBound(int x, int y) {
-		
-		return (x < GameController.BOARD_SIZE_X && x >= 0 && y < GameController.BOARD_SIZE_Y && y >= 0);
-	}	
-	
-	private boolean hasNeighbor(Move point, int distance, int numOfNeighbors) {
-		int startX = point.getX() - distance;
-		int endX = point.getX() + distance;
-		int startY = point.getY() - distance;
-		int endY = point.getY() + distance;
-		
-		for (int i=startX; i<=endX; i++) {
-			for(int j=startY; j<=endY; j++) {
-				if( checkXYInBound(i, j) && !(i == point.getX() && j == point.getY()) ) {
-					if( board[i][j] != 0) {
-						numOfNeighbors--;
-						if(numOfNeighbors <= 0) return true;
-					}
-				}
-			}
-		}
-		
-		return false;
-				
-	}
-
-	private int scoreOfPattern(int count, int block, int empty) {
-		  //没有空位
-		  if(empty <= 0) {
-		    if(count >= 5) return Score.FIVE;
-		    if(block == 0) {
-		      switch(count) {
-		        case 1: return Score.ONE;
-		        case 2: return Score.TWO;
-		        case 3: return Score.THREE;
-		        case 4: return Score.FOUR;
-		      }
-		    }
-
-		    if(block == 1) {
-		      switch(count) {
-		        case 1: return Score.BLOCKED_ONE;
-		        case 2: return Score.BLOCKED_TWO;
-		        case 3: return Score.BLOCKED_THREE;
-		        case 4: return Score.BLOCKED_FOUR;
-		      }
-		    }
-
-		  } else if(empty == 1 || empty == count-1) {
-		    //第1个是空位
-		    if(count >= 6) {
-		      return Score.FIVE;
-		    }
-		    if(block == 0) {
-		      switch(count) {
-		        case 2: return Score.TWO;
-		        case 3: return Score.THREE;
-		        case 4: return Score.BLOCKED_FOUR;
-		        case 5: return Score.FOUR;
-		      }
-		    }
-
-		    if(block == 1) {
-		      switch(count) {
-		        case 2: return Score.BLOCKED_TWO;
-		        case 3: return Score.BLOCKED_THREE;
-		        case 4: return Score.BLOCKED_FOUR;
-		        case 5: return Score.BLOCKED_FOUR;
-		      }
-		    }
-		  } else if(empty == 2 || empty == count-2) {
-		    //第二个是空位
-		    if(count >= 7) {
-		      return Score.FIVE;
-		    }
-		    if(block == 0) {
-		      switch(count) {
-		        case 3: return Score.THREE;
-		        case 4: 
-		        case 5: return Score.BLOCKED_FOUR;
-		        case 6: return Score.FOUR;
-		      }
-		    }
-
-		    if(block == 1) {
-		      switch(count) {
-		        case 3: return Score.BLOCKED_THREE;
-		        case 4: return Score.BLOCKED_FOUR;
-		        case 5: return Score.BLOCKED_FOUR;
-		        case 6: return Score.FOUR;
-		      }
-		    }
-
-		    if(block == 2) {
-		      switch(count) {
-		        case 4:
-		        case 5:
-		        case 6: return Score.BLOCKED_FOUR;
-		      }
-		    }
-		  } else if(empty == 3 || empty == count-3) {
-		    if(count >= 8) {
-		      return Score.FIVE;
-		    }
-		    if(block == 0) {
-		      switch(count) {
-		        case 4:
-		        case 5: return Score.THREE;
-		        case 6: return Score.BLOCKED_FOUR;
-		        case 7: return Score.FOUR;
-		      }
-		    }
-
-		    if(block == 1) {
-		      switch(count) {
-		        case 4:
-		        case 5:
-		        case 6: return Score.BLOCKED_FOUR;
-		        case 7: return Score.FOUR;
-		      }
-		    }
-
-		    if(block == 2) {
-		      switch(count) {
-		        case 4:
-		        case 5:
-		        case 6:
-		        case 7: return Score.BLOCKED_FOUR;
-		      }
-		    }
-		  } else if(empty == 4 || empty == count-4) {
-		    if(count >= 9) {
-		      return Score.FIVE;
-		    }
-		    if(block == 0) {
-		      switch(count) {
-		        case 5:
-		        case 6:
-		        case 7:
-		        case 8: return Score.FOUR;
-		      }
-		    }
-
-		    if(block == 1) {
-		      switch(count) {
-		        case 4:
-		        case 5:
-		        case 6:
-		        case 7: return Score.BLOCKED_FOUR;
-		        case 8: return Score.FOUR;
-		      }
-		    }
-
-		    if(block == 2) {
-		      switch(count) {
-		        case 5:
-		        case 6:
-		        case 7:
-		        case 8: return Score.BLOCKED_FOUR;
-		      }
-		    }
-		  } else if(empty == 5 || empty == count-5) {
-		    return Score.FIVE;
-		  }
-
-		  return 0;
 	}
 }
 
+// BELOW ALL COMMENTED OUT, Codes replaced with Util
+
+
+
+
+//	private int calScoreOfPoint(Move point, int playerColor) {
+//		int width = GameController.BOARD_SIZE_X;
+//		int height = GameController.BOARD_SIZE_Y;
+//		int result = 0;
+//		int count = 0;
+//		int block = 0;
+//		int emptyPosition = -1;
+//		int secondCount = 0; //Another dir
+//		
+//		
+//		//// 以該點出發，找 - | \ / 連線
+//		
+//		
+//		count = 1;
+//		block = 0; // Meet border or opponent
+//		emptyPosition = -1;
+//		secondCount = 0;
+//		
+//		
+//		// Find in right dir
+//		for(int i=point.getY() + 1; ; i++) {
+//			if(i>=width) {
+//				block++;
+//				break;
+//			}
+//			
+//			int pointValue = board[point.getX()][i];
+//			if(pointValue == Constants.EMPTY) {
+//				if(emptyPosition==-1 && i < width-1 && board[point.getX()][i+1] == playerColor) {
+//					emptyPosition = count;
+//				} else {
+//					break;
+//				}
+//			} else if (pointValue == playerColor) {
+//				count++;
+//			} else {
+//				block++;
+//				break;
+//			}
+//		}
+//		
+//		// Find in Left dir
+//		for(int i=point.getY() - 1; ; i--) {
+//			if(i<0) {
+//				block++;
+//				break;
+//			}
+//			
+//			int pointValue = board[point.getX()][i];
+//			if(pointValue == Constants.EMPTY) {
+//				if(emptyPosition==-1 && i > 0 && board[point.getX()][i-1] == playerColor) {
+//					emptyPosition = 0;
+//				} else {
+//					break;
+//				}
+//			} else if (pointValue == playerColor) {
+//				secondCount++;
+//				if(emptyPosition!=-1)
+//					emptyPosition++;
+//			} else {
+//				block++;
+//				break;
+//			}
+//		}
+//		count += secondCount;
+//		result += scoreOfPattern(count, block, emptyPosition);
+//		
+//		// Find in down dir
+//		count = 1;
+//		block = 0; // Meet border or opponent
+//		emptyPosition = -1;
+//		secondCount = 0;
+//		
+//		for(int i=point.getX() + 1; ; i++) {
+//			if(i>=height) {
+//				block++;
+//				break;
+//			}
+//			
+//			int pointValue = board[i][point.getY()];
+//			if(pointValue == Constants.EMPTY) {
+//				if(emptyPosition==-1 && i < height-1 && board[i+1][point.getY()] == playerColor) {
+//					emptyPosition = count;
+//				} else {
+//					break;
+//				}
+//			} else if (pointValue == playerColor) {
+//				count++;
+//			} else {
+//				block++;
+//				break;
+//			}
+//		}
+//		
+//		// Find in up dir
+//		for(int i=point.getX() - 1; ; i--) {
+//			if(i<0) {
+//				block++;
+//				break;
+//			}
+//			
+//			int pointValue = board[i][point.getY()];
+//			if(pointValue == Constants.EMPTY) {
+//				if(emptyPosition==-1 && i > 0 && board[i-1][point.getY()] == playerColor) {
+//					emptyPosition = 0;
+//				} else {
+//					break;
+//				}
+//			} else if (pointValue == playerColor) {
+//				secondCount++;
+//				if(emptyPosition!=-1)
+//					emptyPosition++;
+//			} else {
+//				block++;
+//				break;
+//			}
+//		}
+//		count += secondCount;
+//		result += scoreOfPattern(count, block, emptyPosition);
+//		
+//		// Find in \ down dir
+//		count = 1;
+//		block = 0; // Meet border or opponent
+//		emptyPosition = -1;
+//		secondCount = 0;
+//		
+//		for(int i=1; ; i++) {
+//			int x = point.getX() + i;
+//			int y = point.getY() + i;
+//			
+//			if(!checkXYInBound(x, y)) {
+//				block++;
+//				break;
+//			}
+//			int pointValue = board[x][y];
+//			if(pointValue == Constants.EMPTY) {
+//				if(emptyPosition==-1 && x<height-1 && y<width-1 && board[x+1][y+1] == playerColor) {
+//					emptyPosition = count;
+//				} else {
+//					break;
+//				}
+//			} else if (pointValue == playerColor) {
+//				count++;
+//			} else {
+//				block++;
+//				break;
+//			}
+//		}
+//		
+//		// Find in \ up dir
+//		for(int i=1; ; i++) {
+//			int x = point.getX() - i;
+//			int y = point.getY() - i;
+//			
+//			if(!checkXYInBound(x, y)) {
+//				block++;
+//				break;
+//			}
+//			int pointValue = board[x][y];
+//			if(pointValue == Constants.EMPTY) {
+//				if(emptyPosition==-1 && x>0 && y>0 && board[x-1][y-1] == playerColor) {
+//					emptyPosition = 0;
+//				} else {
+//					break;
+//				}
+//			} else if (pointValue == playerColor) {
+//				secondCount++;
+//				if(emptyPosition!=-1)
+//					emptyPosition++;
+//			} else {
+//				block++;
+//				break;
+//			}
+//		}
+//		count += secondCount;
+//		result += scoreOfPattern(count, block, emptyPosition);
+//		
+//		// Find in / up dir
+//		count = 1;
+//		block = 0; // Meet border or opponent
+//		emptyPosition = -1;
+//		secondCount = 0;
+//		
+//		for(int i=1; ; i++) {
+//			int x = point.getX() + i;
+//			int y = point.getY() - i;
+//			
+//			if(!checkXYInBound(x, y)) {
+//				block++;
+//				break;
+//			}
+//			int pointValue = board[x][y];
+//			if(pointValue == Constants.EMPTY) {
+//				if(emptyPosition==-1 && x<height-1 && y>0 && board[x+1][y-1] == playerColor) {
+//					emptyPosition = count;
+//				} else {
+//					break;
+//				}
+//			} else if (pointValue == playerColor) {
+//				count++;
+//			} else {
+//				block++;
+//				break;
+//			}
+//		}
+//		
+//		for(int i=1; ; i++) {
+//			int x = point.getX() - i;
+//			int y = point.getY() + i;
+//			
+//			if(!checkXYInBound(x, y)) {
+//				block++;
+//				break;
+//			}
+//			int pointValue = board[x][y];
+//			if(pointValue == Constants.EMPTY) {
+//				if(emptyPosition==-1 && x>0 && y<width-1 && board[x-1][y+1] == playerColor) {
+//					emptyPosition = 0;
+//				} else {
+//					break;
+//				}
+//			} else if (pointValue == playerColor) {
+//				secondCount++;
+//				if(emptyPosition!=-1)
+//					emptyPosition++;
+//			} else {
+//				block++;
+//				break;
+//			}
+//		}
+//		count += secondCount;
+//		
+//		result += scoreOfPattern(count, block, emptyPosition);
+//		
+//		return result;
+//	}
+//	
+//	
+//	private int checkIfWin() {
+//		for(int i=0;i<GameController.BOARD_SIZE_X;i++) {
+//			for(int j=0;j<GameController.BOARD_SIZE_Y;j++) {
+//				if(board[i][j] != Constants.EMPTY) {
+//					int status = checkIfFive(i, j) ;
+//					if(status != 0) {
+//						return status ;
+//					}
+//				}
+//			}
+//		}
+//		return 0;
+//	}
+//	private int checkIfFive(int x, int y) {
+//		
+//		
+//		int count;
+//		int i, j;
+//
+//		count = 1; // Vertical
+//		for (i = 1; checkXYInBound(x, y + i) && board[x][y + i] == board[x][y]; i++)
+//			count++;
+//		for (j = -1; checkXYInBound(x, y + j) && board[x][y + j] == board[x][y]; j--)
+//			count++;
+//		if (count >= 5) {
+//			return board[x][y];
+//		}
+//
+//		count = 1; // Horizontal
+//		for (i = 1; checkXYInBound(x + i, y) && board[x + i][y] == board[x][y]; i++)
+//			count++;
+//		for (j = -1; checkXYInBound(x + j, y) && board[x + j][y] == board[x][y]; j--)
+//			count++;
+//		if (count >= 5) {
+//			return board[x][y];
+//		}
+//
+//		count = 1; // BackSlash
+//		for (i = 1; checkXYInBound(x + i, y + i) && board[x + i][y + i] == board[x][y]; i++)
+//			count++;
+//		for (j = -1; checkXYInBound(x + j, y + j)
+//				&& board[x + j][y + j] == board[x][y]; j--)
+//			count++;
+//		if (count >= 5) {
+//			return board[x][y];
+//		}
+//
+//		count = 1; // Slash
+//		for (i = 1; checkXYInBound(x - i, y + i) && board[x - i][y + i] == board[x][y]; i++)
+//			count++;
+//		for (j = -1; checkXYInBound(x - j, y + j)
+//				&& board[x - j][y + j] == board[x][y]; j--)
+//			count++;
+//		if (count >= 5) {
+//			return board[x][y];
+//		}
+//
+//		
+//		
+//		return 0;
+//	}
+//	// Evaluate whole board
+//	private int evaluateBoard(int playerColor) {
+//		int result = 0;
+//		
+//		// eval -
+//		for(int i=0;i<GameController.BOARD_SIZE_X; i++) {
+//			result += evaluateRow(board[i], playerColor);
+//		}
+//		// eval |
+//		for(int i=0;i<GameController.BOARD_SIZE_Y; i++) {
+//			int[] r = new int[GameController.BOARD_SIZE_X];
+//			for(int j=0;j<GameController.BOARD_SIZE_X; j++) {
+//				
+//				r[j] = board[j][i];
+//				
+//			}
+//			result += evaluateRow(r, playerColor);
+//		}
+//		// eval \
+//		// Assume board is square
+//		int boardSize = GameController.BOARD_SIZE_X;
+//		for(int i=0;i<boardSize; i++) {
+//			int size = boardSize - i;
+//			int[] r = new int[size];
+//			for(int j=0; j < size; j++) {
+//				r[j] = board[i+j][j];
+//			}
+//			result += evaluateRow(r, playerColor);
+//		}
+//		for(int i=1;i<boardSize; i++) {
+//			int size = boardSize - i;
+//			int[] r = new int[size];
+//			for(int j=0; j < size; j++) {
+//				r[j] = board[j][i+j];
+//			}
+//			result += evaluateRow(r, playerColor);
+//		}
+//		
+//		// eval /
+//		for(int i=0;i<boardSize; i++) {
+//			int size = i+1;
+//			int[] r = new int[size];
+//			for(int j=0; j < size; j++) {
+//				r[j] = board[i-j][j];
+//			}
+//			result += evaluateRow(r, playerColor);
+//		}
+//		for(int i=1;i<boardSize; i++) {
+//			int size = boardSize - i;
+//			int[] r = new int[size];
+//			for(int j=0; j < size; j++) {
+//				r[j] = board[i+j][boardSize-j-1];
+//			}
+//			result += evaluateRow(r, playerColor);
+//		}
+//		
+//		return result;
+//	}
+//	private int evaluateRow(int row[], int playerColor) {
+////		System.out.println("TESTEVROW");
+////		for(int i=0;i<row.length;i++) {
+////			System.out.print(row[i]);
+////		}
+////		System.out.println("TESTEVROW END");
+//		int result = 0;
+//		int count = 0;
+//		int block = 0;
+//		int emptyPosition = 0;
+//		
+//		for(int i=0; i<row.length; i++) {
+//			if(row[i] == playerColor) {
+//				count = 1;
+//				block = 0;
+//				emptyPosition = 0;
+//				
+//				if(i==0) block=1;
+//				else if(row[i-1] != Constants.EMPTY) block=1;
+//				
+//				for(i=i+1;i<row.length; i++) {
+//					if(row[i] == playerColor) {
+//						count++;
+//					}else if(emptyPosition == 0 && i < row.length-1 && row[i] == Constants.EMPTY && row[i+1] == playerColor) {
+//						emptyPosition = count;
+//					} else {
+//						break;
+//					}
+//				}
+//				
+//				if(i == row.length || row[i] != Constants.EMPTY) block++;
+//				result += scoreOfPattern(count, block, emptyPosition);
+//				
+//			}
+//		}
+//		
+//		return result;
+//	}
+//	
+//	
+//	
+//	
+//	
+//	public boolean checkXYInBound(int x, int y) {
+//		
+//		return (x < GameController.BOARD_SIZE_X && x >= 0 && y < GameController.BOARD_SIZE_Y && y >= 0);
+//	}	
+//	
+//	private boolean hasNeighbor(Move point, int distance, int numOfNeighbors) {
+//		int startX = point.getX() - distance;
+//		int endX = point.getX() + distance;
+//		int startY = point.getY() - distance;
+//		int endY = point.getY() + distance;
+//		
+//		for (int i=startX; i<=endX; i++) {
+//			for(int j=startY; j<=endY; j++) {
+//				if( checkXYInBound(i, j) && !(i == point.getX() && j == point.getY()) ) {
+//					if( board[i][j] != 0) {
+//						numOfNeighbors--;
+//						if(numOfNeighbors <= 0) return true;
+//					}
+//				}
+//			}
+//		}
+//		
+//		return false;
+//				
+//	}
+//
+//	private int scoreOfPattern(int count, int block, int empty) {
+//		  //没有空位
+//		  if(empty <= 0) {
+//		    if(count >= 5) return Score.FIVE;
+//		    if(block == 0) {
+//		      switch(count) {
+//		        case 1: return Score.ONE;
+//		        case 2: return Score.TWO;
+//		        case 3: return Score.THREE;
+//		        case 4: return Score.FOUR;
+//		      }
+//		    }
+//
+//		    if(block == 1) {
+//		      switch(count) {
+//		        case 1: return Score.BLOCKED_ONE;
+//		        case 2: return Score.BLOCKED_TWO;
+//		        case 3: return Score.BLOCKED_THREE;
+//		        case 4: return Score.BLOCKED_FOUR;
+//		      }
+//		    }
+//
+//		  } else if(empty == 1 || empty == count-1) {
+//		    //第1个是空位
+//		    if(count >= 6) {
+//		      return Score.FIVE;
+//		    }
+//		    if(block == 0) {
+//		      switch(count) {
+//		        case 2: return Score.TWO;
+//		        case 3: return Score.THREE;
+//		        case 4: return Score.BLOCKED_FOUR;
+//		        case 5: return Score.FOUR;
+//		      }
+//		    }
+//
+//		    if(block == 1) {
+//		      switch(count) {
+//		        case 2: return Score.BLOCKED_TWO;
+//		        case 3: return Score.BLOCKED_THREE;
+//		        case 4: return Score.BLOCKED_FOUR;
+//		        case 5: return Score.BLOCKED_FOUR;
+//		      }
+//		    }
+//		  } else if(empty == 2 || empty == count-2) {
+//		    //第二个是空位
+//		    if(count >= 7) {
+//		      return Score.FIVE;
+//		    }
+//		    if(block == 0) {
+//		      switch(count) {
+//		        case 3: return Score.THREE;
+//		        case 4: 
+//		        case 5: return Score.BLOCKED_FOUR;
+//		        case 6: return Score.FOUR;
+//		      }
+//		    }
+//
+//		    if(block == 1) {
+//		      switch(count) {
+//		        case 3: return Score.BLOCKED_THREE;
+//		        case 4: return Score.BLOCKED_FOUR;
+//		        case 5: return Score.BLOCKED_FOUR;
+//		        case 6: return Score.FOUR;
+//		      }
+//		    }
+//
+//		    if(block == 2) {
+//		      switch(count) {
+//		        case 4:
+//		        case 5:
+//		        case 6: return Score.BLOCKED_FOUR;
+//		      }
+//		    }
+//		  } else if(empty == 3 || empty == count-3) {
+//		    if(count >= 8) {
+//		      return Score.FIVE;
+//		    }
+//		    if(block == 0) {
+//		      switch(count) {
+//		        case 4:
+//		        case 5: return Score.THREE;
+//		        case 6: return Score.BLOCKED_FOUR;
+//		        case 7: return Score.FOUR;
+//		      }
+//		    }
+//
+//		    if(block == 1) {
+//		      switch(count) {
+//		        case 4:
+//		        case 5:
+//		        case 6: return Score.BLOCKED_FOUR;
+//		        case 7: return Score.FOUR;
+//		      }
+//		    }
+//
+//		    if(block == 2) {
+//		      switch(count) {
+//		        case 4:
+//		        case 5:
+//		        case 6:
+//		        case 7: return Score.BLOCKED_FOUR;
+//		      }
+//		    }
+//		  } else if(empty == 4 || empty == count-4) {
+//		    if(count >= 9) {
+//		      return Score.FIVE;
+//		    }
+//		    if(block == 0) {
+//		      switch(count) {
+//		        case 5:
+//		        case 6:
+//		        case 7:
+//		        case 8: return Score.FOUR;
+//		      }
+//		    }
+//
+//		    if(block == 1) {
+//		      switch(count) {
+//		        case 4:
+//		        case 5:
+//		        case 6:
+//		        case 7: return Score.BLOCKED_FOUR;
+//		        case 8: return Score.FOUR;
+//		      }
+//		    }
+//
+//		    if(block == 2) {
+//		      switch(count) {
+//		        case 5:
+//		        case 6:
+//		        case 7:
+//		        case 8: return Score.BLOCKED_FOUR;
+//		      }
+//		    }
+//		  } else if(empty == 5 || empty == count-5) {
+//		    return Score.FIVE;
+//		  }
+//
+//		  return 0;
+//	}
+//}
+//

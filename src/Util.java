@@ -239,7 +239,20 @@ public class Util {
 		return result;
 	}
 	
-	
+	public static int fixScore(int score) {
+		  if(score < Score.FOUR && score >= Score.BLOCKED_FOUR) {
+			if(score >= Score.BLOCKED_FOUR && score < (Score.BLOCKED_FOUR + Score.THREE)) {
+			      //单独冲四，意义不大
+			      return Score.THREE;
+			    } else if(score >= Score.BLOCKED_FOUR + Score.THREE && score < Score.BLOCKED_FOUR * 2) {
+			      return Score.FOUR;  //冲四活三，比双三分高，相当于自己形成活四
+			    } else {
+			      //双冲四 比活四分数也高
+			      return Score.FOUR * 2;
+			    }
+			  }
+			  return score;
+		}
 	public static int checkIfWin(int[][] board) {
 		for(int i=0;i<GameController.BOARD_SIZE_X;i++) {
 			for(int j=0;j<GameController.BOARD_SIZE_Y;j++) {

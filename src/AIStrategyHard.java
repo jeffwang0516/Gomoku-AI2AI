@@ -9,7 +9,7 @@ public class AIStrategyHard implements AIStrategy{
 	private int[][] scoreSelf;
 	private int[][] scoreOpponent;
 	private ArrayList<Move> steps = new ArrayList<Move>();
-	
+	int minimaxDepth = 4;
 	
 //	private AI aiInstance;
 	public AIStrategyHard(int[][] board) {
@@ -44,6 +44,7 @@ public class AIStrategyHard implements AIStrategy{
 		    }
 		  }
 	}
+	
 	@Override
 	public Move computeAIMove(Move previousMove) {
 		
@@ -55,7 +56,7 @@ public class AIStrategyHard implements AIStrategy{
 		
 		
 		
-		Move newMove = minimax(4);
+		Move newMove = minimax(minimaxDepth);
 		updateScore(newMove);
 		
 		

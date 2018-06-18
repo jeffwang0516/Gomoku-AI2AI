@@ -1,5 +1,5 @@
 
-class Score {
+public class Score {
 	public static int ONE = 10;
 	public static int TWO = 100;
 	public static int THREE = 1000;
