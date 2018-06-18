@@ -3,6 +3,7 @@ public class Move {
 
 	private int x;
 	private int y;
+	public int score = 0;
 	
 	public Move(int x, int y) {
 		this.x=x;
