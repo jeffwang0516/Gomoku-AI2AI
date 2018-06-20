@@ -74,3 +74,22 @@ private boolean isZobristEnabled = false;
 
 ## Execution
 Run GomokuMain.java
+
+## Intro
+Based on minimax...
+
+### Improvements
+- next step generating function
+- finding must kill algorithm
+  - Extends search depth
+- ....Please add more....
+
+### Evaluation
+(The **minimax** BELOW represents minimax + AB prune + better next step generating function)
+- minimax vs minimax 
+- minimax vs greedy
+- minimax + finding kill vs greedy
+- minimax + finding kill vs minimax
+- minimax + finding kill + zobrist vs greedy
+- minimax + finding kill + zobrist vs minimax
+
