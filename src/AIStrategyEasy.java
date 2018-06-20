@@ -354,7 +354,7 @@ public class AIStrategyEasy implements AIStrategy{
 			Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
 			if(cachedScore != null) {
 				if(cachedScore.deep >= deep) {
-	//				System.out.println("FOUND Cache KILL!");
+//					System.out.println("FOUND Cache KILL!");
 					return cachedScore.stepsForKill;
 				}
 			}
@@ -420,7 +420,7 @@ public class AIStrategyEasy implements AIStrategy{
 			Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
 			if(cachedScore != null) {
 				if(cachedScore.deep >= deep) {
-	//				System.out.println("FOUND Cache KILL!");
+//					System.out.println("FOUND Cache KILL!");
 					return cachedScore.stepsForKill;
 				}
 			}
@@ -515,14 +515,14 @@ public class AIStrategyEasy implements AIStrategy{
 			return score;
 		}
 		
-		Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
-		if(cachedScore != null) {
-			if(cachedScore.deep >= deep) {
-//				System.out.println("FOUND Cache!");
-				if(cachedScore.score != -1)
-					return cachedScore.score;
-			}
-		}
+//		Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
+//		if(cachedScore != null) {
+//			if(cachedScore.deep >= deep) {
+////				System.out.println("FOUND Cache!");
+//				if(cachedScore.score != -1)
+//					return cachedScore.score;
+//			}
+//		}
 		
 		int best = Integer.MAX_VALUE;
 		ArrayList<Move> moves = generateNextSteps(opponentColor, deep);
@@ -591,14 +591,16 @@ public class AIStrategyEasy implements AIStrategy{
 			return score;
 		}
 		
-		Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
-		if(cachedScore != null) {
-			if(cachedScore.deep >= deep) {
-//				System.out.println("FOUND Cache!");
-				if(cachedScore.score != -1)
-					return cachedScore.score;
-			}
-		}
+//		Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
+//		if(cachedScore != null) {
+//			if(cachedScore.deep >= deep) {
+//				
+//				if(cachedScore.getMaxScoreInSteps() != -1) {
+//					System.out.println("FOUND Cache! MAX");
+//					return cachedScore.getMaxScoreInSteps();
+//				}
+//			}
+//		}
 		
 		
 		int best = Integer.MIN_VALUE;

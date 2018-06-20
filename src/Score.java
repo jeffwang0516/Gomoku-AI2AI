@@ -15,4 +15,18 @@ public class Score {
 	public int score = -1;
 	
 	public ArrayList<Move> stepsForKill;
+	
+	public int getMaxScoreInSteps() {
+		if(score != -1) return score;
+		
+		int maxVal = Integer.MIN_VALUE;
+		
+		for(int i=0;i<stepsForKill.size();i++) {
+			if(stepsForKill.get(i).score > maxVal) {
+				maxVal = stepsForKill.get(i).score;
+			}
+		}
+		
+		return maxVal == Integer.MIN_VALUE ? -1 : maxVal;
+	}
 }
