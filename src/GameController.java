@@ -158,17 +158,24 @@ public class GameController implements Runnable {
 			}
 		}
 	}
-
+	long startTime;
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
+		startTime = System.currentTimeMillis();
+		System.out.println("Start Time:" + startTime);
+		// ... do something ...
+		
 		while(true) {
 			gameModel.clicked(new Move(0, 0));
 			System.out.println("Perform click.. One round");
 			refreshViewAfterMove();
 			if(gameModel.getGameStatus() > 0) {
-				gameView.showGameEndNotification(gameModel.getGameStatus());
+				
 				System.out.println("Game End");
+				long estimatedTime = System.currentTimeMillis() - startTime;
+				System.out.println("Time Consumed:" + estimatedTime);
+				gameView.showGameEndNotification(gameModel.getGameStatus());
 				break;
 			}
 			

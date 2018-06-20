@@ -1,4 +1,5 @@
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,6 +29,7 @@ public class AIStrategyEasy implements AIStrategy{
 		initScore();
 		
 		zobristHash = new ZobristHash(myColor, opponentColor);
+		zobristHash.performAndGetHashValue(new Move(7, 7), myColor);
 	}
 	
 	private void initScore() {
@@ -108,14 +110,14 @@ public class AIStrategyEasy implements AIStrategy{
 		
 		// Update score after opponent's move
 		updateScore(previousMove);
-		
+		zobristHash.performAndGetHashValue(previousMove, opponentColor);
 		Move point = minimax(minimaxDepth);
 		
 		// DEBUG message
-		int myScore = Util.calScoreOfPoint(board, point, Constants.COLOR_BLACK);
-		int  opponentScore= Util.calScoreOfPoint(board, point, Constants.COLOR_WHITE);
-		System.out.println("BLACK: "+myScore+" WHITE: "+opponentScore);
-		System.out.println("EV1: "+evaluate(myColor) +", EV2: "+ evaluate(opponentColor));
+//		int myScore = Util.calScoreOfPoint(board, point, Constants.COLOR_BLACK);
+//		int  opponentScore= Util.calScoreOfPoint(board, point, Constants.COLOR_WHITE);
+//		System.out.println("BLACK: "+myScore+" WHITE: "+opponentScore);
+//		System.out.println("EV1: "+evaluate(myColor) +", EV2: "+ evaluate(opponentColor));
 //		System.out.println("---------board----------");
 //		for(int i=0;i<GameController.BOARD_SIZE_X;i++) {
 //			for(int j=0;j<GameController.BOARD_SIZE_Y;j++) {
@@ -142,7 +144,7 @@ public class AIStrategyEasy implements AIStrategy{
 		
 		// Update score after own move
 		updateScore(point);
-		
+		zobristHash.performAndGetHashValue(point, myColor);
 		// Step record
 		steps.add(point);
 		
@@ -350,7 +352,7 @@ public class AIStrategyEasy implements AIStrategy{
 		Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
 		if(cachedScore != null) {
 			if(cachedScore.deep >= deep) {
-				System.out.println("FOUND Cache KILL!");
+//				System.out.println("FOUND Cache KILL!");
 				return cachedScore.stepsForKill;
 			}
 		}
@@ -408,6 +410,14 @@ public class AIStrategyEasy implements AIStrategy{
 		if(status == playerColor) return null;
 		if(status == reverseRole(playerColor)) return result;
 		if(deep<0) return null;
+		
+		Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
+		if(cachedScore != null) {
+			if(cachedScore.deep >= deep) {
+//				System.out.println("FOUND Cache KILL!");
+				return cachedScore.stepsForKill;
+			}
+		}
 		
 		ArrayList<Move> points = findMin(playerColor, MIN_SCORE);
 		if(points.isEmpty()) return null;
