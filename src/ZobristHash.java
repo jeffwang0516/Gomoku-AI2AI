@@ -17,8 +17,10 @@ public class ZobristHash {
 		
 		
 		for(int i=0;i< player1.length;i++) {
-			player1[i] = ThreadLocalRandom.current().nextLong();
-			player2[i] = ThreadLocalRandom.current().nextLong();
+			player1[i] =ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE); //ThreadLocalRandom.current().nextLong();
+			player2[i] = ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE);//ThreadLocalRandom.current().nextLong();
+//			ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE);
+//			System.out.println("Zobrist: p1:"+player1[i]+" p2:"+player2[i]);
 		}
 		
 		hash = ThreadLocalRandom.current().nextLong();

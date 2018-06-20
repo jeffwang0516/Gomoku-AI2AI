@@ -22,6 +22,7 @@ public class AIStrategyEasy implements AIStrategy{
 	
 	private Dictionary<Long, Score> boardStatus = new Hashtable<Long, Score>();
 	private ZobristHash zobristHash;
+	private boolean isZobristEnabled = true;
 	
 	public AIStrategyEasy(int[][] board) {
 		this.board = board;
@@ -110,7 +111,7 @@ public class AIStrategyEasy implements AIStrategy{
 		
 		// Update score after opponent's move
 		updateScore(previousMove);
-		zobristHash.performAndGetHashValue(previousMove, opponentColor);
+		if(isZobristEnabled) zobristHash.performAndGetHashValue(previousMove, opponentColor);
 		Move point = minimax(minimaxDepth);
 		
 		// DEBUG message
@@ -144,7 +145,7 @@ public class AIStrategyEasy implements AIStrategy{
 		
 		// Update score after own move
 		updateScore(point);
-		zobristHash.performAndGetHashValue(point, myColor);
+		if(isZobristEnabled) zobristHash.performAndGetHashValue(point, myColor);
 		// Step record
 		steps.add(point);
 		
@@ -154,14 +155,14 @@ public class AIStrategyEasy implements AIStrategy{
 	private void putMove(Move point, int playerColor) {
 		board[point.getX()][point.getY()] = playerColor;
 		updateScore(point);
-		zobristHash.performAndGetHashValue(point, playerColor);
+		if(isZobristEnabled) zobristHash.performAndGetHashValue(point, playerColor);
 	}
 	
 	private void removeMove(Move point) {
 		int originalColor = board[point.getX()][point.getY()];
 		board[point.getX()][point.getY()] = Constants.EMPTY;
 		updateScore(point);
-		zobristHash.performAndGetHashValue(point, originalColor);
+		if(isZobristEnabled) zobristHash.performAndGetHashValue(point, originalColor);
 	}
 	
 	
@@ -349,11 +350,13 @@ public class AIStrategyEasy implements AIStrategy{
 		
 		if(deep<0) return null;
 		
-		Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
-		if(cachedScore != null) {
-			if(cachedScore.deep >= deep) {
-//				System.out.println("FOUND Cache KILL!");
-				return cachedScore.stepsForKill;
+		if(isZobristEnabled) {
+			Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
+			if(cachedScore != null) {
+				if(cachedScore.deep >= deep) {
+	//				System.out.println("FOUND Cache KILL!");
+					return cachedScore.stepsForKill;
+				}
 			}
 		}
 		
@@ -384,17 +387,19 @@ public class AIStrategyEasy implements AIStrategy{
 				// ----
 				if(!moves.isEmpty()) {
 					moves.add(0, point);
-					//--
-					hashScore.stepsForKill = moves;
-					boardStatus.put(zobristHash.getCurrentHash(), hashScore);
+					if(isZobristEnabled) {
+						hashScore.stepsForKill = moves;
+						boardStatus.put(zobristHash.getCurrentHash(), hashScore);
+					}
 					//--
 					return moves;
 				} else {
 					ArrayList<Move> res = new ArrayList<Move>();
 					res.add(point);
-					//--
-					hashScore.stepsForKill = res;
-					boardStatus.put(zobristHash.getCurrentHash(), hashScore);
+					if(isZobristEnabled) {
+						hashScore.stepsForKill = res;
+						boardStatus.put(zobristHash.getCurrentHash(), hashScore);
+					}
 					//--
 					return res;
 				}
@@ -411,11 +416,13 @@ public class AIStrategyEasy implements AIStrategy{
 		if(status == reverseRole(playerColor)) return result;
 		if(deep<0) return null;
 		
-		Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
-		if(cachedScore != null) {
-			if(cachedScore.deep >= deep) {
-//				System.out.println("FOUND Cache KILL!");
-				return cachedScore.stepsForKill;
+		if(isZobristEnabled) {
+			Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
+			if(cachedScore != null) {
+				if(cachedScore.deep >= deep) {
+	//				System.out.println("FOUND Cache KILL!");
+					return cachedScore.stepsForKill;
+				}
 			}
 		}
 		
@@ -449,12 +456,13 @@ public class AIStrategyEasy implements AIStrategy{
 		
 		Move move = result.get((int) Math.floor(result.size() * Math.random()));
 		keepOneResult.add(move);
-		// ----
-		Score hashScore = new Score();
-		hashScore.deep = deep;
-		//--
-		hashScore.stepsForKill = keepOneResult;
-		boardStatus.put(zobristHash.getCurrentHash(), hashScore);
+		if(isZobristEnabled) {
+			Score hashScore = new Score();
+			hashScore.deep = deep;
+			//--
+			hashScore.stepsForKill = keepOneResult;
+			boardStatus.put(zobristHash.getCurrentHash(), hashScore);
+		}
 		//--
 		// ----
 		return keepOneResult;
@@ -507,6 +515,15 @@ public class AIStrategyEasy implements AIStrategy{
 			return score;
 		}
 		
+		Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
+		if(cachedScore != null) {
+			if(cachedScore.deep >= deep) {
+//				System.out.println("FOUND Cache!");
+				if(cachedScore.score != -1)
+					return cachedScore.score;
+			}
+		}
+		
 		int best = Integer.MAX_VALUE;
 		ArrayList<Move> moves = generateNextSteps(opponentColor, deep);
 		
@@ -542,11 +559,12 @@ public class AIStrategyEasy implements AIStrategy{
 			}
 			beta = Integer.min(beta, best);
 		}
-		
-		Score hashScore = new Score();
-		hashScore.deep = deep;
-		hashScore.score = best;
-		boardStatus.put(zobristHash.getCurrentHash(), hashScore);
+		if(isZobristEnabled) {
+			Score hashScore = new Score();
+			hashScore.deep = deep;
+			hashScore.score = best;
+			boardStatus.put(zobristHash.getCurrentHash(), hashScore);
+		}
 		
 		return best;
 	}
@@ -573,13 +591,14 @@ public class AIStrategyEasy implements AIStrategy{
 			return score;
 		}
 		
-//		Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
-//		if(cachedScore != null) {
-//			if(cachedScore.deep >= deep) {
+		Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
+		if(cachedScore != null) {
+			if(cachedScore.deep >= deep) {
 //				System.out.println("FOUND Cache!");
-//				return cachedScore.score;
-//			}
-//		}
+				if(cachedScore.score != -1)
+					return cachedScore.score;
+			}
+		}
 		
 		
 		int best = Integer.MIN_VALUE;
@@ -611,18 +630,19 @@ public class AIStrategyEasy implements AIStrategy{
 					return move.score;
 				}
 			}
-			if( (deep <= 2) && best < Score.THREE*2 && best > -1*Score.THREE*2) {
-				Move move = checkMustKillStep(findKillDepth, false);
-				if(move != null) {
-					return move.score;
-				}
-			}
+//			if( (deep <= 2) && best < Score.THREE*2 && best > -1*Score.THREE*2) {
+//				Move move = checkMustKillStep(findKillDepth, false);
+//				if(move != null) {
+//					return move.score;
+//				}
+//			}
 		}
-		
-		Score hashScore = new Score();
-		hashScore.deep = deep;
-		hashScore.score = best;
-		boardStatus.put(zobristHash.getCurrentHash(), hashScore);
+		if(isZobristEnabled) {
+			Score hashScore = new Score();
+			hashScore.deep = deep;
+			hashScore.score = best;
+			boardStatus.put(zobristHash.getCurrentHash(), hashScore);
+		}	
 		
 		return best;
 	}

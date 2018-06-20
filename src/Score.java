@@ -12,7 +12,7 @@ public class Score {
 	public static int BLOCKED_FOUR = 1000;
 	
 	public int deep = 0;
-	public int score = 0;
+	public int score = -1;
 	
 	public ArrayList<Move> stepsForKill;
 }
