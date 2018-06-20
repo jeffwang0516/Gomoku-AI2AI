@@ -1,11 +1,20 @@
 import java.util.Vector;
 
 public class GameModel {
-	// Set first move for player 1
-	private Move firstStep = new Move(7, 7);
+	// Set first move and second move for player 1
+	public Move firstStep = new Move(7, 7);
+	public Move secStep = new Move(7, 4);
 	
+	// Set this to 1 to disable the PRO rule
+	private int proRuleStepsCnt = 1; 
 	
-	private Solver player1 = new HumanSolver(this, Constants.COLOR_BLACK);
+	// Enable minimax+AB with/without finding must kill steps
+	private boolean player1_findMustKillEnabled = true; 
+	
+	// 0 for minimax, 1 for greedy
+	private int player2_minimaxOrGreedy = 0; 
+	
+	private Solver player1; // = new HumanSolver(this, Constants.COLOR_BLACK);
 	private Solver player2;
 	
 	private Solver currentSolver;
@@ -16,45 +25,66 @@ public class GameModel {
 	
 	private int gameEndStatus = 0;
 	GameController controller = null;
+	
+	private int player1StepCount = 0;
+	private int player2StepCount = 0;
+	
+	
+	
 	public GameModel(GameController controller){
 		this.controller = controller;
+		
 		resetGame();
 	}
 	
 	public void enableAI(int [][] board) {	
 		//LET player1 be computer StrategyEasy***********
-		this.player1 = new AISolver(this, Constants.COLOR_BLACK, new AIStrategyEasy(board));
+		this.player1 = new AISolver(this, Constants.COLOR_BLACK, new AIStrategyABAndMustKill(board, player1_findMustKillEnabled));
 		currentSolver = player1;
 		//***********
 		//LET player2 be computer StrategyHard***********
-		this.player2 = new AISolver(this, Constants.COLOR_WHITE, new AIStrategyHard(board));
+		AIStrategy strategyForP2;
+		if(player2_minimaxOrGreedy == 0) {
+			strategyForP2 = new AIStrategyAlpaBeta(board);
+		} else {
+			strategyForP2 = new AIStrategyGreedy(board);
+		}
+		this.player2 = new AISolver(this, Constants.COLOR_WHITE, strategyForP2);
 	}
 	
 	
-	Boolean ifFirstStep = true;
+	int stepCount = 0;
 	Move previousStep;
 	public void clicked(Move move) {
 		System.out.println("Calculating... Player "+currentSolver.getColor());
 		boolean stepMade = false;
-		if (!ifFirstStep) {
+		if (stepCount >= proRuleStepsCnt) {
 			
 			
 			stepMade = currentSolver.processNextMove(previousStep);
 			move = currentSolver.getNewMove();
 		} else {
-			move = firstStep;
-			stepMade = currentSolver.makeNewMove(move);
-
-			ifFirstStep = false;
+			if(stepCount==0)
+				move = firstStep;
+			else if(stepCount==1) {
+				((AIStrategyABAndMustKill)((AISolver) currentSolver).getCurrentStrategy()).putMove(previousStep, Constants.COLOR_WHITE);
+				move = secStep;
+			}
+//			stepMade = currentSolver.makeNewMove(move);
+			((AIStrategyABAndMustKill)((AISolver) currentSolver).getCurrentStrategy()).putMove(move, Constants.COLOR_BLACK);
+			stepMade = true;
+			
+			stepCount++;
 		}
 		
 		
 		
 		if(stepMade) {
+			player1StepCount++;
 			if(checkWinner(move)) return;
 			controller.refreshViewAfterMove();
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(500);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -68,9 +98,10 @@ public class GameModel {
 			if(checkWinner(currentSolver.getNewMove())) return;
 			previousStep = currentSolver.getNewMove();
 			controller.refreshViewAfterMove();
+			player2StepCount++;
 			System.out.println("----Player "+currentSolver.getColor()+"finished ! SWITCH----");
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(500);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -81,7 +112,9 @@ public class GameModel {
 	}
 	
 	
-	
+	public String getStepRecord() {
+		return "Used Steps: p1="+player1StepCount+" p2="+player2StepCount;
+	}
 	
 	public void resetGame() {
 		for (int i = 0; i < GameController.BOARD_SIZE_X; i++)

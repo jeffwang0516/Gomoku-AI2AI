@@ -19,4 +19,8 @@ public class AISolver extends Solver{
 		return makeNewMove(newMove);
 	}
 	
+	public AIStrategy getCurrentStrategy() {
+		return currentStrategy;
+	}
+	
 }

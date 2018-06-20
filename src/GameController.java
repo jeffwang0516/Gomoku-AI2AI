@@ -127,16 +127,16 @@ public class GameController implements Runnable {
 	class AILevelOptionListener implements ActionListener{
 		
 		public void actionPerformed(ActionEvent e) {
-			String actionCommand = e.getActionCommand();
-			int[][] board = gameModel.getBoardArray();
-			if (actionCommand.equals("Easy")) {
-				gameModel.enableAI(new AIStrategyEasy(board));
-			} else if (actionCommand.equals("Hard")) {
-				gameModel.enableAI(new AIStrategyHard(board));
-			}
-			AILevelOptionWindow.getInstance().hideAIOptionWindow();
-			
-			setGameReady(true);
+//			String actionCommand = e.getActionCommand();
+//			int[][] board = gameModel.getBoardArray();
+//			if (actionCommand.equals("Easy")) {
+//				gameModel.enableAI(new AIStrategyEasy(board));
+//			} else if (actionCommand.equals("Hard")) {
+//				gameModel.enableAI(new AIStrategyHard(board));
+//			}
+//			AILevelOptionWindow.getInstance().hideAIOptionWindow();
+//			
+//			setGameReady(true);
 		}
 	}
 	
@@ -158,17 +158,26 @@ public class GameController implements Runnable {
 			}
 		}
 	}
-
+	long startTime;
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
+		startTime = System.currentTimeMillis();
+		System.out.println("Start Time:" + startTime);
+		// ... do something ...
+		
 		while(true) {
 			gameModel.clicked(new Move(0, 0));
 			System.out.println("Perform click.. One round");
 			refreshViewAfterMove();
 			if(gameModel.getGameStatus() > 0) {
-				gameView.showGameEndNotification(gameModel.getGameStatus());
+				
 				System.out.println("Game End");
+				long estimatedTime = System.currentTimeMillis() - startTime;
+				System.out.println("Time Consumed:" + estimatedTime);
+				System.out.println(gameModel.getStepRecord());
+				gameView.showGameEndNotification(gameModel.getGameStatus());
+				
 				break;
 			}
 			

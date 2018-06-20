@@ -1,13 +1,13 @@
 import java.util.Vector;
 
-public class AI {
+public class AIGreedy {
 	private int[][] board;
 	private static final int width = GameController.BOARD_SIZE_X;
 	private static final int height = GameController.BOARD_SIZE_X;
 	private int[][] aiWeight = new int[width][height];
 
 	
-	public AI(int[][] board) {
+	public AIGreedy(int[][] board) {
 		this.board = board;
 	}
 	public boolean checkXY(int x, int y) {
