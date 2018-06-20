@@ -15,8 +15,9 @@ public class GameModel {
 	private Vector<Move> recordMoves = new Vector<Move>();
 	
 	private int gameEndStatus = 0;
-	
-	public GameModel(){
+	GameController controller = null;
+	public GameModel(GameController controller){
+		this.controller = controller;
 		resetGame();
 	}
 	
@@ -33,7 +34,7 @@ public class GameModel {
 	Boolean ifFirstStep = true;
 	Move previousStep;
 	public void clicked(Move move) {
-		System.out.println("Clicked");
+		System.out.println("Calculating... Player "+currentSolver.getColor());
 		boolean stepMade = false;
 		if (!ifFirstStep) {
 			
@@ -51,13 +52,30 @@ public class GameModel {
 		
 		if(stepMade) {
 			if(checkWinner(move)) return;
+			controller.refreshViewAfterMove();
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.out.println("----Player "+currentSolver.getColor()+"finished ! SWITCH----");
 			switchTurn();
 		}
 		if(currentSolver == player2) {//if(currentSolver instanceof AISolver) {
+			System.out.println("Calculating... Player "+currentSolver.getColor());
 			currentSolver.processNextMove(move);
 			if(checkWinner(currentSolver.getNewMove())) return;
 			previousStep = currentSolver.getNewMove();
-
+			controller.refreshViewAfterMove();
+			System.out.println("----Player "+currentSolver.getColor()+"finished ! SWITCH----");
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			switchTurn();
 		}
 	}

@@ -2,9 +2,9 @@
 public class GomokuMain {
 	public static void main(String[] args) {
 		
-		GameModel gameModel = new GameModel();
+//		GameModel gameModel = new GameModel();
 		GameView gameView = new GameView();
 		
-		new GameController(gameView, gameModel).startGame();
+		new GameController(gameView).startGame();
 	}
 }

@@ -5,19 +5,19 @@ import java.awt.event.MouseEvent;
 import java.util.Vector;
 
 
-public class GameController {
+public class GameController implements Runnable {
 
 	private GameView gameView;
-	private GameModel gameModel;
+	private GameModel gameModel = new GameModel(this);
 	
 	public static final int BOARD_SIZE_X = 15;
 	public static final int BOARD_SIZE_Y = 15;
 	
 	private boolean gameReady = false;
 	
-	public GameController(GameView gameView, GameModel gameModel) {
+	public GameController(GameView gameView) {
 		this.gameView=gameView;
-		this.gameModel=gameModel;
+//		this.gameModel=gameModel;
 		
 		gameView.setMenuListener(new MenuListener());
 		gameView.setBoardClickListener(new CustomMouseListener());
@@ -28,13 +28,18 @@ public class GameController {
 			.addOptionsListener(new AILevelOptionListener());	
 
 	}
-
+	Thread gameThread = null;
 	public void startGame() {
 		updateBoardData();
 		
-		ModeSelectWindow.getInstance().showOptionWindow();
+//		ModeSelectWindow.getInstance().showOptionWindow();
+		gameModel.enableAI(gameModel.getBoardArray());
+		setGameReady(true);
+		gameThread = new Thread(this);
 		gameModel.resetGame();
 		gameView.setVisible(true);
+		
+		gameThread.start();
 	}
 	
 	public void setGameReady(boolean ready) {
@@ -70,12 +75,12 @@ public class GameController {
 //			
 			if (!((x % gridSize) == 0 || ((x + 1) % gridSize) == 0 || ((x - 1) % gridSize) == 0
 					|| (y % gridSize) == 0 || ((y + 1) % gridSize) == 0 || ((y - 1) % gridSize) == 0)) {
-				gameModel.clicked(new Move(x / gridSize, y / gridSize));
-//				System.out.println("TESTTE");
-				refreshViewAfterMove();
-				if(gameModel.getGameStatus() > 0) {
-					gameView.showGameEndNotification(gameModel.getGameStatus());
-				}
+//				gameModel.clicked(new Move(x / gridSize, y / gridSize));
+////				System.out.println("TESTTE");
+//				refreshViewAfterMove();
+//				if(gameModel.getGameStatus() > 0) {
+//					gameView.showGameEndNotification(gameModel.getGameStatus());
+//				}
 			}
 			
 			// Auto Start
@@ -152,5 +157,30 @@ public class GameController {
 				System.exit(0);
 			}
 		}
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		while(true) {
+			gameModel.clicked(new Move(0, 0));
+			System.out.println("Perform click.. One round");
+			refreshViewAfterMove();
+			if(gameModel.getGameStatus() > 0) {
+				gameView.showGameEndNotification(gameModel.getGameStatus());
+				System.out.println("Game End");
+				break;
+			}
+			
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+		}
+		
 	}
 }
