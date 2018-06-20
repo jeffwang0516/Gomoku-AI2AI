@@ -127,16 +127,16 @@ public class GameController implements Runnable {
 	class AILevelOptionListener implements ActionListener{
 		
 		public void actionPerformed(ActionEvent e) {
-			String actionCommand = e.getActionCommand();
-			int[][] board = gameModel.getBoardArray();
-			if (actionCommand.equals("Easy")) {
-				gameModel.enableAI(new AIStrategyEasy(board));
-			} else if (actionCommand.equals("Hard")) {
-				gameModel.enableAI(new AIStrategyHard(board));
-			}
-			AILevelOptionWindow.getInstance().hideAIOptionWindow();
-			
-			setGameReady(true);
+//			String actionCommand = e.getActionCommand();
+//			int[][] board = gameModel.getBoardArray();
+//			if (actionCommand.equals("Easy")) {
+//				gameModel.enableAI(new AIStrategyEasy(board));
+//			} else if (actionCommand.equals("Hard")) {
+//				gameModel.enableAI(new AIStrategyHard(board));
+//			}
+//			AILevelOptionWindow.getInstance().hideAIOptionWindow();
+//			
+//			setGameReady(true);
 		}
 	}
 	
@@ -175,7 +175,9 @@ public class GameController implements Runnable {
 				System.out.println("Game End");
 				long estimatedTime = System.currentTimeMillis() - startTime;
 				System.out.println("Time Consumed:" + estimatedTime);
+				System.out.println(gameModel.getStepRecord());
 				gameView.showGameEndNotification(gameModel.getGameStatus());
+				
 				break;
 			}
 			

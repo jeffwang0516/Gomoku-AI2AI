@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-public class AIStrategyHard implements AIStrategy{
+public class AIStrategyAlpaBeta implements AIStrategy{
 	private int[][] board;
 	private int myColor = Constants.COLOR_WHITE;
 	private int opponentColor = Constants.COLOR_BLACK;
@@ -12,7 +12,7 @@ public class AIStrategyHard implements AIStrategy{
 	int minimaxDepth = 4;
 	
 //	private AI aiInstance;
-	public AIStrategyHard(int[][] board) {
+	public AIStrategyAlpaBeta(int[][] board) {
 		this.board = board;
 //		this.aiInstance = new AI(board);
 		
