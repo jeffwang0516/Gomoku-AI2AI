@@ -2,6 +2,9 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 public class AIStrategyEasy implements AIStrategy{
 	
@@ -16,10 +19,15 @@ public class AIStrategyEasy implements AIStrategy{
 	int minimaxDepth = 4; // Should be even WHEN this is a max node
 	int findKillDepth = 5;
 	
+	private Dictionary<Long, Score> boardStatus = new Hashtable<Long, Score>();
+	private ZobristHash zobristHash;
+	
 	public AIStrategyEasy(int[][] board) {
 		this.board = board;
 		
 		initScore();
+		
+		zobristHash = new ZobristHash(myColor, opponentColor);
 	}
 	
 	private void initScore() {
@@ -141,7 +149,18 @@ public class AIStrategyEasy implements AIStrategy{
 		return point; // return next step by new Move(x,y)
 	}
 	
+	private void putMove(Move point, int playerColor) {
+		board[point.getX()][point.getY()] = playerColor;
+		updateScore(point);
+		zobristHash.performAndGetHashValue(point, playerColor);
+	}
 	
+	private void removeMove(Move point) {
+		int originalColor = board[point.getX()][point.getY()];
+		board[point.getX()][point.getY()] = Constants.EMPTY;
+		updateScore(point);
+		zobristHash.performAndGetHashValue(point, originalColor);
+	}
 	
 	
 //	Move deepingMinimax(int deep) {
@@ -327,6 +346,15 @@ public class AIStrategyEasy implements AIStrategy{
 		ArrayList<Move> result = new ArrayList<Move>();
 		
 		if(deep<0) return null;
+		
+		Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
+		if(cachedScore != null) {
+			if(cachedScore.deep >= deep) {
+				System.out.println("FOUND Cache KILL!");
+				return cachedScore.stepsForKill;
+			}
+		}
+		
 		ArrayList<Move> points = findMax(playerColor, MAX_SCORE);
 		if(!points.isEmpty() && points.get(0).score >= Score.FOUR) {
 			result.add(points.get(0));
@@ -336,21 +364,36 @@ public class AIStrategyEasy implements AIStrategy{
 		
 		for(int i=0;i<points.size();i++) {
 			Move point = points.get(i);
-			board[point.getX()][point.getY()] = playerColor;
-			updateScore(point);
+//			board[point.getX()][point.getY()] = playerColor;
+//			updateScore(point);
+			putMove(point, playerColor);
 			
 			if(!(point.score<=-Score.FIVE)) lastMaxPoint = point;
 			ArrayList<Move> moves = min_kill(reverseRole(playerColor), deep-1);
-			board[point.getX()][point.getY()] = Constants.EMPTY;
-			updateScore(point);
+//			board[point.getX()][point.getY()] = Constants.EMPTY;
+//			updateScore(point);
+			removeMove(point);
 			
 			if(moves != null) {
+				// ----
+				Score hashScore = new Score();
+				hashScore.deep = deep;
+				
+				// ----
 				if(!moves.isEmpty()) {
 					moves.add(0, point);
+					//--
+					hashScore.stepsForKill = moves;
+					boardStatus.put(zobristHash.getCurrentHash(), hashScore);
+					//--
 					return moves;
 				} else {
 					ArrayList<Move> res = new ArrayList<Move>();
 					res.add(point);
+					//--
+					hashScore.stepsForKill = res;
+					boardStatus.put(zobristHash.getCurrentHash(), hashScore);
+					//--
 					return res;
 				}
 			}	
@@ -372,13 +415,15 @@ public class AIStrategyEasy implements AIStrategy{
 		
 		for(int i=0;i<points.size();i++) {
 			Move point = points.get(i);
-			board[point.getX()][point.getY()] = playerColor;
-			updateScore(point);
+//			board[point.getX()][point.getY()] = playerColor;
+//			updateScore(point);
+			putMove(point, playerColor);
 			
 			lastMinPoint = point;
 			ArrayList<Move> moves = max_kill(reverseRole(playerColor), deep-1);
-			board[point.getX()][point.getY()] = Constants.EMPTY;
-			updateScore(point);
+//			board[point.getX()][point.getY()] = Constants.EMPTY;
+//			updateScore(point);
+			removeMove(point);
 			
 			if(moves != null) {
 				moves.add(0, point);
@@ -394,7 +439,14 @@ public class AIStrategyEasy implements AIStrategy{
 		
 		Move move = result.get((int) Math.floor(result.size() * Math.random()));
 		keepOneResult.add(move);
-		
+		// ----
+		Score hashScore = new Score();
+		hashScore.deep = deep;
+		//--
+		hashScore.stepsForKill = keepOneResult;
+		boardStatus.put(zobristHash.getCurrentHash(), hashScore);
+		//--
+		// ----
 		return keepOneResult;
 	}
 	// Original Max min
@@ -406,11 +458,13 @@ public class AIStrategyEasy implements AIStrategy{
 		int beta = Integer.MAX_VALUE;
 		for(int i=0; i<moves.size(); i++) {
 			Move point = moves.get(i);
-			board[point.getX()][point.getY()] = myColor;
-			updateScore(point);
+//			board[point.getX()][point.getY()] = myColor;
+//			updateScore(point);
+			putMove(point, myColor);
 			int scoreMin = min(deep-1, alpha, beta);
-			board[point.getX()][point.getY()] = Constants.EMPTY;
-			updateScore(point);
+//			board[point.getX()][point.getY()] = Constants.EMPTY;
+//			updateScore(point);
+			removeMove(point);
 			
 			if(scoreMin == best) {
 				point.score = best;
@@ -448,14 +502,16 @@ public class AIStrategyEasy implements AIStrategy{
 		
 		for(int i=0; i<moves.size(); i++) {
 			Move point = moves.get(i);
-			board[point.getX()][point.getY()] = opponentColor;
-			updateScore(point);
+//			board[point.getX()][point.getY()] = opponentColor;
+//			updateScore(point);
+			putMove(point, opponentColor);
 			steps.add(point);
 			int scoreMax = (int) (max(deep-1, alpha, beta) * 0.8);
 			
 			
-			board[point.getX()][point.getY()] = Constants.EMPTY;
-			updateScore(point);
+//			board[point.getX()][point.getY()] = Constants.EMPTY;
+//			updateScore(point);
+			removeMove(point);
 			steps.remove(point);
 			if(scoreMax < best) {
 				best = scoreMax;
@@ -476,6 +532,12 @@ public class AIStrategyEasy implements AIStrategy{
 			}
 			beta = Integer.min(beta, best);
 		}
+		
+		Score hashScore = new Score();
+		hashScore.deep = deep;
+		hashScore.score = best;
+		boardStatus.put(zobristHash.getCurrentHash(), hashScore);
+		
 		return best;
 	}
 	
@@ -501,17 +563,28 @@ public class AIStrategyEasy implements AIStrategy{
 			return score;
 		}
 		
+//		Score cachedScore = boardStatus.get(zobristHash.getCurrentHash());
+//		if(cachedScore != null) {
+//			if(cachedScore.deep >= deep) {
+//				System.out.println("FOUND Cache!");
+//				return cachedScore.score;
+//			}
+//		}
+		
+		
 		int best = Integer.MIN_VALUE;
 		ArrayList<Move> moves = generateNextSteps(myColor, deep);
 		
 		for(int i=0; i<moves.size(); i++) {
 			Move point = moves.get(i);
-			board[point.getX()][point.getY()] = myColor;
-			updateScore(point);
+//			board[point.getX()][point.getY()] = myColor;
+//			updateScore(point);
+			putMove(point, myColor);
 			steps.add(point);
 			int scoreMin = (int) (min(deep-1, alpha, beta) * 0.8);
-			board[point.getX()][point.getY()] = Constants.EMPTY;
-			updateScore(point);
+//			board[point.getX()][point.getY()] = Constants.EMPTY;
+//			updateScore(point);
+			removeMove(point);
 			steps.remove(point);
 			
 			if(scoreMin > best) {
@@ -535,6 +608,12 @@ public class AIStrategyEasy implements AIStrategy{
 				}
 			}
 		}
+		
+		Score hashScore = new Score();
+		hashScore.deep = deep;
+		hashScore.score = best;
+		boardStatus.put(zobristHash.getCurrentHash(), hashScore);
+		
 		return best;
 	}
 	

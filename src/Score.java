@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 
 public class Score {
 	public static int ONE = 10;
@@ -10,4 +11,8 @@ public class Score {
 	public static int BLOCKED_THREE = 100;
 	public static int BLOCKED_FOUR = 1000;
 	
+	public int deep = 0;
+	public int score = 0;
+	
+	public ArrayList<Move> stepsForKill;
 }

@@ -2,7 +2,7 @@ import java.util.Vector;
 
 public class GameModel {
 	// Set first move for player 1
-	private Move firstStep = new Move(7, 7);
+	private Move firstStep = new Move(3, 3);
 	
 	
 	private Solver player1 = new HumanSolver(this, Constants.COLOR_BLACK);
@@ -16,8 +16,12 @@ public class GameModel {
 	
 	private int gameEndStatus = 0;
 	GameController controller = null;
+	
+	
+	
 	public GameModel(GameController controller){
 		this.controller = controller;
+		
 		resetGame();
 	}
 	
