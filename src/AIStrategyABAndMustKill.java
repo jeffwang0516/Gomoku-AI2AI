@@ -19,7 +19,7 @@ public class AIStrategyABAndMustKill implements AIStrategy{
 	
 	int minimaxDepth = 4; // Should be even WHEN this is a max node
 	int findKillDepth = 7;
-	boolean findMustKillEnabled = true;
+	boolean findMustKillEnabled;
 	
 	private Dictionary<Long, Score> boardStatus = new Hashtable<Long, Score>();
 	private ZobristHash zobristHash;
