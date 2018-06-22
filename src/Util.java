@@ -1,6 +1,5 @@
 
 public class Util {
-
 	
 	public static int calScoreOfPoint(int[][] board, Move point, int playerColor) {
 		int width = GameController.BOARD_SIZE_X;
@@ -10,17 +9,14 @@ public class Util {
 		int block = 0;
 		int emptyPosition = -1;
 		int secondCount = 0; //Another dir
-		
-		
+			
 		//// 以該點出發，找 - | \ / 連線
-		
 		
 		count = 1;
 		block = 0; // Meet border or opponent
 		emptyPosition = -1;
 		secondCount = 0;
-		
-		
+			
 		// Find in right dir
 		for(int i=point.getY() + 1; ; i++) {
 			if(i>=width) {
@@ -242,12 +238,10 @@ public class Util {
 	public static int fixScore(int score) {
 		  if(score < Score.FOUR && score >= Score.BLOCKED_FOUR) {
 			if(score >= Score.BLOCKED_FOUR && score < (Score.BLOCKED_FOUR + Score.THREE)) {
-			      //单独冲四，意义不大
 			      return Score.THREE;
 			    } else if(score >= Score.BLOCKED_FOUR + Score.THREE && score < Score.BLOCKED_FOUR * 2) {
-			      return Score.FOUR;  //冲四活三，比双三分高，相当于自己形成活四
+			      return Score.FOUR;
 			    } else {
-			      //双冲四 比活四分数也高
 			      return Score.FOUR * 2;
 			    }
 			  }
@@ -341,7 +335,7 @@ public class Util {
 	}
 
 	private static int scoreOfPattern(int count, int block, int empty) {
-		  //没有空位
+		  
 		  if(empty <= 0) {
 		    if(count >= 5) return Score.FIVE;
 		    if(block == 0) {
@@ -363,7 +357,7 @@ public class Util {
 		    }
 
 		  } else if(empty == 1 || empty == count-1) {
-		    //第1个是空位
+		    
 		    if(count >= 6) {
 		      return Score.FIVE;
 		    }
@@ -385,7 +379,7 @@ public class Util {
 		      }
 		    }
 		  } else if(empty == 2 || empty == count-2) {
-		    //第二个是空位
+		   
 		    if(count >= 7) {
 		      return Score.FIVE;
 		    }

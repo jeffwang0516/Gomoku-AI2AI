@@ -29,8 +29,7 @@ public class GameModel {
 	private int player1StepCount = 0;
 	private int player2StepCount = 0;
 	
-	
-	
+		
 	public GameModel(GameController controller){
 		this.controller = controller;
 		
